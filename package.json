@@ -20,7 +20,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:run": "docker-compose up -d",
-    "migrations:create": "typeorm migration:create ./src/migrations/$NAME"
+    "migration:generate": "typeorm-ts-node-esm migration:generate ./src/migrations/$NAME  -d ./src/configs/typeorm-migrations.config.ts",
+    "migration:run": "typeorm-ts-node-esm migration:run -d ./src/configs/typeorm-migrations.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -28,6 +29,7 @@
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/typeorm": "^9.0.1",
+    "dotenv": "^16.0.3",
     "pg": "^8.8.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
