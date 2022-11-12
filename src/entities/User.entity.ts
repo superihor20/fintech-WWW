@@ -10,6 +10,7 @@ import {
 
 import { Profile } from './Profile.entity';
 import { Role } from './Role.entity';
+import { Wallet } from './Wallet.entity';
 
 @Entity('users')
 export class User {
@@ -35,4 +36,8 @@ export class User {
   @OneToOne(() => Role, { eager: true })
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
+
+  @OneToOne(() => Wallet, { onDelete: 'CASCADE', eager: true })
+  @JoinColumn({ name: 'wallet_id', referencedColumnName: 'id' })
+  wallet: Wallet;
 }
