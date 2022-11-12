@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { User } from '../../entities';
 
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -14,18 +14,26 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    return this.userRepository.save(createUserDto);
+  async create(userDto: UserDto): Promise<User> {
+    return this.userRepository.save(userDto);
   }
 
-  async findOne(id: number): Promise<User> {
-    const foundUser = await this.userRepository.findOneBy({ id });
+  private async findOneBy(filters: FindOptionsWhere<User>): Promise<User> {
+    const foundUser = await this.userRepository.findOneBy(filters);
 
     if (!foundUser) {
       throw new NotFoundException();
     }
 
     return foundUser;
+  }
+
+  async findOne(id: number): Promise<User> {
+    return this.findOneBy({ id });
+  }
+
+  async findOneByEmail(email: string): Promise<User> {
+    return this.findOneBy({ email });
   }
 
   async findAll(): Promise<User[]> {
