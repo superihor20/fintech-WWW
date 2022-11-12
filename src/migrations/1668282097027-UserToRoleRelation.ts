@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UserToPermissionRelation1668282097027
-  implements MigrationInterface
-{
-  name = 'UserToPermissionRelation1668282097027';
+export class UserToRoleRelation1668282097027 implements MigrationInterface {
+  name = 'UserToRoleRelation1668282097027';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
