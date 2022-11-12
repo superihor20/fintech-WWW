@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { Profile } from './Profile.entity';
+import { Role } from './Role.entity';
 
 @Entity('users')
 export class User {
@@ -30,4 +31,8 @@ export class User {
   @OneToOne(() => Profile, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'profile_id', referencedColumnName: 'id' })
   profile: Profile;
+
+  @OneToOne(() => Role, { eager: true })
+  @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
+  role: Role;
 }
