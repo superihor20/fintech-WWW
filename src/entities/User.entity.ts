@@ -27,7 +27,7 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToOne(() => Profile)
+  @OneToOne(() => Profile, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'profile_id', referencedColumnName: 'id' })
   profile: Profile;
 }
