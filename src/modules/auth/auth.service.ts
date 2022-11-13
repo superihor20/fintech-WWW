@@ -1,12 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import { hash, compare } from 'bcrypt';
-import { Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { Role, User } from '../../entities';
+import { User } from '../../entities';
 import { ProfileDto } from '../profile/dto/profile.dto';
 import { ProfileService } from '../profile/profile.service';
 import { UserDto } from '../user/dto/user.dto';
@@ -22,13 +20,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly profileService: ProfileService,
     private readonly walletService: WalletService,
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
   ) {}
-
-  private async getUserRole(name: UserRoles): Promise<Role> {
-    return this.roleRepository.findOneBy({ name });
-  }
 
   async hashPassword(password: string): Promise<string> {
     return hash(password, this.salt);
@@ -59,7 +51,7 @@ export class AuthService {
 
   async signUp(userDto: UserDto) {
     const hashedPassword = await this.hashPassword(userDto.password);
-    const userRole = await this.getUserRole(UserRoles.USER);
+    const userRole = await this.userService.getUserRole(UserRoles.USER);
     const newProfile = await this.profileService.create({} as ProfileDto);
     const newWallet = await this.walletService.create({ amount: 0 });
     const newUser = await this.userService.create(
@@ -76,7 +68,13 @@ export class AuthService {
   }
 
   async signIn(user: User) {
-    const payload = { email: user.email, id: user.id, role: user.role };
+    const payload = {
+      email: user.email,
+      id: user.id,
+      role: user.role,
+      profileId: user.profile.id,
+      walletId: user.wallet.id,
+    };
 
     return {
       access_token: this.jwtService.sign(payload),

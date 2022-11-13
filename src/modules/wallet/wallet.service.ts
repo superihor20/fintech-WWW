@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
+import { ErrorMessages } from '../../common/enums/errors-messages.enum';
+import { OperationType } from '../../common/enums/operation-type.enum';
+import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amont';
 import { Wallet } from '../../entities';
 
 import { WalletDto } from './dto/wallet.dto';
@@ -36,5 +43,29 @@ export class WalletService {
     this.walletRepository.merge(foundWallet, walletDto);
 
     return this.walletRepository.save(foundWallet);
+  }
+
+  async operation(walletId: number, amount: number, type: OperationType) {
+    const wallet = await this.findOne(walletId);
+    const updatedAmount = makeOperationWithWalletAmount(
+      wallet.amount,
+      amount,
+      type,
+    );
+
+    this.update(walletId, { amount: updatedAmount });
+  }
+
+  async checkIfEnoughFounds(
+    walletId: number,
+    amount: number,
+  ): Promise<boolean> {
+    const wallet = await this.findOne(walletId);
+
+    if (amount > wallet.amount) {
+      throw new ConflictException(ErrorMessages.NOT_ENOUGH_MONEY);
+    }
+
+    return true;
   }
 }

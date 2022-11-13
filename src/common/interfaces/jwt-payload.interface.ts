@@ -6,4 +6,6 @@ export interface JwtPayload {
   role: Role;
   iat: number;
   exp: number;
+  walletId: number;
+  profileId: number;
 }

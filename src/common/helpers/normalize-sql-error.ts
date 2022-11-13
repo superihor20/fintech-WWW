@@ -1,5 +1,5 @@
 import { ErrorMessages } from '../enums/errors-messages.enum';
-import { SQLErrorsCodes } from '../enums/sql-errors-codes';
+import { SQLErrorsCodes } from '../enums/sql-errors-codes.enum';
 
 export const normalizeSQLError = (
   message: string,
