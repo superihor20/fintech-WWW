@@ -1,6 +1,7 @@
 import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 
+import { User } from '../../entities';
 import { UserDto } from '../user/dto/user.dto';
 
 import { AuthService } from './auth.service';
@@ -18,6 +19,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   async signIn(@Req() req: Request) {
-    return req.user;
+    if (req.user instanceof User) {
+      return this.authService.signIn(req.user);
+    }
   }
 }

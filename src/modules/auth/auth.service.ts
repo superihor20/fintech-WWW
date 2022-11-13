@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
 import { ErrorMessagesEnums } from '../../common/enums/errors-messages.enum';
@@ -10,7 +11,10 @@ import { UserService } from '../user/user.service';
 export class AuthService {
   private readonly salt = 10;
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private jwtService: JwtService,
+  ) {}
 
   async hashPassword(password: string): Promise<string> {
     return hash(password, this.salt);
@@ -48,9 +52,11 @@ export class AuthService {
     });
   }
 
-  async signIn(userDto: UserDto): Promise<void> {
-    await this.validateUser(userDto);
+  async signIn(user: User) {
+    const payload = { email: user.email, sub: user.id };
 
-    return;
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
