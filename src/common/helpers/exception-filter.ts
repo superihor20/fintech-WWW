@@ -8,7 +8,7 @@ import {
 import { Response, Request } from 'express';
 import { QueryFailedError } from 'typeorm';
 
-import { ErrorMessagesEnums } from '../enums/errors-messages.enum';
+import { ErrorMessages } from '../enums/errors-messages.enum';
 
 import { normalizeSQLError } from './normalize-sql-error';
 
@@ -36,17 +36,25 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception.driverError.code,
       );
 
-      Logger.error(`Path ${request.url}: ${exception}`);
+      Logger.error(
+        `Path ${
+          request.url
+        }: ${exception} | timestamp: ${new Date().toISOString()}`,
+      );
 
       return response
         .status(normalizedSQLError.status)
         .json(normalizedSQLError);
     }
 
-    Logger.error(`Path ${request.url}: ${exception}`);
+    Logger.error(
+      `Path ${
+        request.url
+      }: ${exception}| timestamp: ${new Date().toISOString()}`,
+    );
 
     return response.status(500).json({
-      message: ErrorMessagesEnums.INTERNAL_SERVER_ERROR,
+      message: ErrorMessages.INTERNAL_SERVER_ERROR,
     });
   }
 }

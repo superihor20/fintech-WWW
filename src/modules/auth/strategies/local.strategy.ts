@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 
-import { ErrorMessagesEnums } from '../../../common/enums/errors-messages.enum';
+import { ErrorMessages } from '../../../common/enums/errors-messages.enum';
 import { User } from '../../../entities';
 import { AuthService } from '../auth.service';
 
@@ -19,7 +19,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user) {
-      throw new UnauthorizedException(ErrorMessagesEnums.USER_NOT_FOUND);
+      throw new UnauthorizedException(ErrorMessages.USER_NOT_FOUND);
     }
 
     return user;

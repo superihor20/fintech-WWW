@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
-import { ErrorMessagesEnums } from '../../common/enums/errors-messages.enum';
+import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { User } from '../../entities';
 import { UserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
@@ -28,7 +28,7 @@ export class AuthService {
     const foundUser = await this.userService.findOneByEmail(userDto.email);
 
     if (!foundUser) {
-      throw new NotFoundException(ErrorMessagesEnums.USER_NOT_FOUND);
+      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const isPasswordValid = await this.compare(
@@ -37,7 +37,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new NotFoundException(ErrorMessagesEnums.USER_NOT_FOUND);
+      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     return foundUser;

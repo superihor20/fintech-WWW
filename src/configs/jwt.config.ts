@@ -4,6 +4,6 @@ import { JwtModuleOptions } from '@nestjs/jwt';
 export const jwtConfig = async (
   configService: ConfigService,
 ): Promise<JwtModuleOptions> => ({
-  secret: configService.get<string>('JWT_SECRET'),
+  secret: configService.get('JWT_SECRET'),
   signOptions: { expiresIn: '15m' },
 });
