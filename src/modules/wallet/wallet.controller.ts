@@ -41,8 +41,8 @@ export class WalletController {
     const user: JwtPayload = request.user as JwtPayload;
     const userRole = await this.userService.getUserRole(UserRoles.USER);
     await this.walletService.operation(
+      user.walletId,
       walletDto.amount,
-      user,
       OperationType.DEPOSITE,
     );
 
@@ -62,8 +62,8 @@ export class WalletController {
       walletDto.amount,
     );
     await this.walletService.operation(
+      user.walletId,
       walletDto.amount,
-      user,
       OperationType.WITHDRAW,
     );
   }

@@ -8,7 +8,6 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { OperationType } from '../../common/enums/operation-type.enum';
-import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
 import { Wallet } from '../../entities';
 
 import { WalletDto } from './dto/wallet.dto';
@@ -45,8 +44,8 @@ export class WalletService {
     return this.walletRepository.save(foundWallet);
   }
 
-  async operation(amount: number, user: JwtPayload, type: OperationType) {
-    const wallet = await this.findOne(user.walletId);
+  async operation(walletId: number, amount: number, type: OperationType) {
+    const wallet = await this.findOne(walletId);
     let updatedAmount = wallet.amount;
 
     switch (type) {
@@ -58,7 +57,7 @@ export class WalletService {
         break;
     }
 
-    this.update(user.walletId, { amount: updatedAmount });
+    this.update(walletId, { amount: updatedAmount });
   }
 
   async checkIfEnoughFounds(
