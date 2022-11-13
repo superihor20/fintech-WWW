@@ -68,11 +68,6 @@ export class UserService {
   async updateUserRole(id: number, role: UserRoles) {
     const foundRole = await this.getUserRole(role);
     const foundUser = await this.findOne(id);
-    const adminRole = await this.getUserRole(UserRoles.ADMIN);
-
-    if (foundUser.role.id === adminRole.id) {
-      return;
-    }
 
     this.userRepository.merge(foundUser, { role: foundRole });
 

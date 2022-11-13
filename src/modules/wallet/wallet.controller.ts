@@ -36,7 +36,11 @@ export class WalletController {
   @HttpCode(204)
   async deposit(@Req() request: Request, @Body() walletDto: WalletDto) {
     const user: JwtPayload = request.user as JwtPayload;
-    this.walletService.deposite(walletDto.amount, user.walletId);
-    this.userService.updateUserRole(user.id, UserRoles.INVESTOR);
+    const userRole = await this.userService.getUserRole(UserRoles.USER);
+    await this.walletService.deposite(walletDto.amount, user);
+
+    if (user.role.id === userRole.id) {
+      await this.userService.updateUserRole(user.id, UserRoles.INVESTOR);
+    }
   }
 }

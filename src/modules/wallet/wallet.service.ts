@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
+import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
 import { Wallet } from '../../entities';
 
 import { WalletDto } from './dto/wallet.dto';
@@ -38,8 +39,8 @@ export class WalletService {
     return this.walletRepository.save(foundWallet);
   }
 
-  async deposite(amount: number, walletId: number) {
-    const wallet = await this.findOne(walletId);
-    this.update(walletId, { amount: amount + wallet.amount });
+  async deposite(amount: number, user: JwtPayload) {
+    const wallet = await this.findOne(user.walletId);
+    this.update(user.walletId, { amount: amount + wallet.amount });
   }
 }
