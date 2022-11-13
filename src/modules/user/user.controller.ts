@@ -27,6 +27,8 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
+  @Roles(UserRoles.ADMIN)
+  @UseGuards(RolesGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
