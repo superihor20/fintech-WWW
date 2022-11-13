@@ -8,6 +8,7 @@ import { ProfileDto } from '../profile/dto/profile.dto';
 import { ProfileService } from '../profile/profile.service';
 import { UserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly profileService: ProfileService,
+    private readonly walletService: WalletService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -50,12 +52,14 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(userDto.password);
 
     const newProfile = await this.profileService.create({} as ProfileDto);
+    const newWallet = await this.walletService.create({ amount: 0 });
     const newUser = await this.userService.create(
       {
         ...userDto,
         password: hashedPassword,
       },
       newProfile,
+      newWallet,
     );
 
     return this.signIn(newUser);
