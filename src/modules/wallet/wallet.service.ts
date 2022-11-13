@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
+import { ErrorMessages } from '../../common/enums/errors-messages.enum';
+import { OperationType } from '../../common/enums/operation-type.enum';
 import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
 import { Wallet } from '../../entities';
 
@@ -39,8 +45,32 @@ export class WalletService {
     return this.walletRepository.save(foundWallet);
   }
 
-  async deposite(amount: number, user: JwtPayload) {
+  async operation(amount: number, user: JwtPayload, type: OperationType) {
     const wallet = await this.findOne(user.walletId);
-    this.update(user.walletId, { amount: amount + wallet.amount });
+    let updatedAmount = wallet.amount;
+
+    switch (type) {
+      case OperationType.DEPOSITE:
+        updatedAmount += amount;
+        break;
+      case OperationType.WITHDRAW:
+        updatedAmount -= amount;
+        break;
+    }
+
+    this.update(user.walletId, { amount: updatedAmount });
+  }
+
+  async checkIfEnoughFounds(
+    walletId: number,
+    amount: number,
+  ): Promise<boolean> {
+    const wallet = await this.findOne(walletId);
+
+    if (amount > wallet.amount) {
+      throw new ConflictException(ErrorMessages.NOT_ENOUGH_MONEY);
+    }
+
+    return true;
   }
 }
