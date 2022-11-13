@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { jwtConfig } from '../../configs/jwt.config';
+import { Role } from '../../entities';
 import { ProfileModule } from '../profile/profile.module';
 import { UserModule } from '../user/user.module';
 import { WalletModule } from '../wallet/wallet.module';
@@ -25,6 +27,7 @@ import { LocalStrategy } from './strategies/local.strategy';
       inject: [ConfigService],
       useFactory: jwtConfig,
     }),
+    TypeOrmModule.forFeature([Role]),
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
