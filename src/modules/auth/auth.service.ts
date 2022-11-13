@@ -1,11 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import { hash, compare } from 'bcrypt';
+import { Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/enums/errors-messages.enum';
-import { User } from '../../entities';
+import { UserRoles } from '../../common/enums/user-roles.enum';
+import { Role, User } from '../../entities';
+import { ProfileDto } from '../profile/dto/profile.dto';
+import { ProfileService } from '../profile/profile.service';
 import { UserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
@@ -13,8 +19,16 @@ export class AuthService {
 
   constructor(
     private readonly userService: UserService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly profileService: ProfileService,
+    private readonly walletService: WalletService,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
   ) {}
+
+  private async getUserRole(name: UserRoles): Promise<Role> {
+    return this.roleRepository.findOneBy({ name });
+  }
 
   async hashPassword(password: string): Promise<string> {
     return hash(password, this.salt);
@@ -43,17 +57,26 @@ export class AuthService {
     return foundUser;
   }
 
-  async signUp(userDto: UserDto): Promise<User> {
+  async signUp(userDto: UserDto) {
     const hashedPassword = await this.hashPassword(userDto.password);
+    const userRole = await this.getUserRole(UserRoles.USER);
+    const newProfile = await this.profileService.create({} as ProfileDto);
+    const newWallet = await this.walletService.create({ amount: 0 });
+    const newUser = await this.userService.create(
+      {
+        ...userDto,
+        password: hashedPassword,
+      },
+      newProfile,
+      newWallet,
+      userRole,
+    );
 
-    return this.userService.create({
-      ...userDto,
-      password: hashedPassword,
-    });
+    return this.signIn(newUser);
   }
 
   async signIn(user: User) {
-    const payload = { email: user.email, sub: user.id };
+    const payload = { email: user.email, id: user.id, role: user.role };
 
     return {
       access_token: this.jwtService.sign(payload),

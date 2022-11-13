@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,7 +21,7 @@ export class User {
   @Column({ type: 'varchar', unique: true })
   email: string;
 
-  @Column({ type: 'varchar', nullable: true, select: false })
+  @Column({ type: 'varchar', nullable: true })
   password: string;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -33,7 +34,7 @@ export class User {
   @JoinColumn({ name: 'profile_id', referencedColumnName: 'id' })
   profile: Profile;
 
-  @OneToOne(() => Role, { eager: true })
+  @ManyToOne(() => Role, (role) => role, { eager: true })
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
 

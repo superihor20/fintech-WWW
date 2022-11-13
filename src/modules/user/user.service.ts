@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
-import { User } from '../../entities';
+import { Profile, Role, User, Wallet } from '../../entities';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
@@ -14,8 +14,18 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(userDto: UserDto): Promise<User> {
-    return this.userRepository.save(userDto);
+  async create(
+    userDto: UserDto,
+    profile: Profile,
+    wallet: Wallet,
+    userRole: Role,
+  ): Promise<User> {
+    return this.userRepository.save({
+      ...userDto,
+      profile,
+      wallet,
+      role: userRole,
+    });
   }
 
   private async findOneBy(filters: FindOptionsWhere<User>): Promise<User> {
