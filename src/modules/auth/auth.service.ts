@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { hash, compare } from 'bcrypt';
 
+import { ErrorMessagesEnums } from '../../common/enums/errors-messages.enum';
 import { User } from '../../entities';
 import { UserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
@@ -21,13 +22,18 @@ export class AuthService {
 
   async validateUser(userDto: UserDto): Promise<User> {
     const foundUser = await this.userService.findOneByEmail(userDto.email);
+
+    if (!foundUser) {
+      throw new NotFoundException(ErrorMessagesEnums.USER_NOT_FOUND);
+    }
+
     const isPasswordValid = await this.compare(
       userDto.password,
       foundUser.password,
     );
 
     if (!isPasswordValid) {
-      throw new NotFoundException('User with this createntials not found');
+      throw new NotFoundException(ErrorMessagesEnums.USER_NOT_FOUND);
     }
 
     return foundUser;
