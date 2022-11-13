@@ -4,6 +4,8 @@ import { hash, compare } from 'bcrypt';
 
 import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { User } from '../../entities';
+import { ProfileDto } from '../profile/dto/profile.dto';
+import { ProfileService } from '../profile/profile.service';
 import { UserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
 
@@ -13,7 +15,8 @@ export class AuthService {
 
   constructor(
     private readonly userService: UserService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly profileService: ProfileService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -46,10 +49,14 @@ export class AuthService {
   async signUp(userDto: UserDto) {
     const hashedPassword = await this.hashPassword(userDto.password);
 
-    const newUser = await this.userService.create({
-      ...userDto,
-      password: hashedPassword,
-    });
+    const newProfile = await this.profileService.create({} as ProfileDto);
+    const newUser = await this.userService.create(
+      {
+        ...userDto,
+        password: hashedPassword,
+      },
+      newProfile,
+    );
 
     return this.signIn(newUser);
   }
