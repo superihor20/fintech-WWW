@@ -8,13 +8,12 @@ import {
   HttpCode,
   UseGuards,
   Req,
-  ConflictException,
 } from '@nestjs/common';
 import { Request } from 'express';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
+import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
 import { Roles } from '../../decorators/role.decorator';
-import { User } from '../../entities';
 import { RolesGuard } from '../../guards/roles.guards';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
@@ -38,14 +37,10 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Req() req: Request,
-  ) {
-    this.userService.verifyUser(req.user as User, +id);
-    return this.userService.update(+id, updateUserDto);
+  @Patch('update')
+  update(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
+    const user: JwtPayload = req.user as JwtPayload;
+    return this.userService.update(+user.id, updateUserDto);
   }
 
   @Delete(':id')

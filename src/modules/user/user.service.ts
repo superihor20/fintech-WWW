@@ -1,12 +1,7 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
-import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { Profile, Role, User, Wallet } from '../../entities';
 
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -65,15 +60,5 @@ export class UserService {
     this.userRepository.merge(foundUser, updateUserDto);
 
     return this.userRepository.save(foundUser);
-  }
-
-  verifyUser(reqUser: User, verifiedUserId: number): boolean {
-    const isVerified = reqUser.id === verifiedUserId;
-
-    if (!isVerified) {
-      throw new ConflictException(ErrorMessages.NOT_YOUR_PROFILE);
-    }
-
-    return isVerified;
   }
 }
