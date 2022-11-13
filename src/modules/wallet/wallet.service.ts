@@ -8,6 +8,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { OperationType } from '../../common/enums/operation-type.enum';
+import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amont';
 import { Wallet } from '../../entities';
 
 import { WalletDto } from './dto/wallet.dto';
@@ -46,16 +47,11 @@ export class WalletService {
 
   async operation(walletId: number, amount: number, type: OperationType) {
     const wallet = await this.findOne(walletId);
-    let updatedAmount = wallet.amount;
-
-    switch (type) {
-      case OperationType.DEPOSITE:
-        updatedAmount += amount;
-        break;
-      case OperationType.WITHDRAW:
-        updatedAmount -= amount;
-        break;
-    }
+    const updatedAmount = makeOperationWithWalletAmount(
+      wallet.amount,
+      amount,
+      type,
+    );
 
     this.update(walletId, { amount: updatedAmount });
   }
