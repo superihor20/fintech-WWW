@@ -37,4 +37,9 @@ export class WalletService {
 
     return this.walletRepository.save(foundWallet);
   }
+
+  async deposite(amount: number, walletId: number) {
+    const wallet = await this.findOne(walletId);
+    this.update(walletId, { amount: amount + wallet.amount });
+  }
 }

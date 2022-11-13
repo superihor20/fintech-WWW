@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
+import { UserRoles } from '../../common/enums/user-roles.enum';
 import { Profile, Role, User, Wallet } from '../../entities';
 
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,6 +13,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
   ) {}
 
   async create(
@@ -60,5 +63,23 @@ export class UserService {
     this.userRepository.merge(foundUser, updateUserDto);
 
     return this.userRepository.save(foundUser);
+  }
+
+  async updateUserRole(id: number, role: UserRoles) {
+    const foundRole = await this.getUserRole(role);
+    const foundUser = await this.findOne(id);
+    const adminRole = await this.getUserRole(UserRoles.ADMIN);
+
+    if (foundUser.role.id === adminRole.id) {
+      return;
+    }
+
+    this.userRepository.merge(foundUser, { role: foundRole });
+
+    return this.userRepository.save(foundUser);
+  }
+
+  async getUserRole(name: UserRoles): Promise<Role> {
+    return this.roleRepository.findOneBy({ name });
   }
 }
