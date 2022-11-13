@@ -3,12 +3,14 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { UserRoles } from '../common/enums/user-roles.enum';
 
 import { Permission } from './Permission.entity';
+import { User } from './User.entity';
 
 @Entity('roles')
 export class Role {
@@ -17,6 +19,9 @@ export class Role {
 
   @Column({ type: 'enum', enum: UserRoles, unique: true })
   name: UserRoles;
+
+  @OneToMany(() => User, (user) => user.id)
+  users: User[];
 
   @ManyToMany(() => Permission, { eager: true })
   @JoinTable({
