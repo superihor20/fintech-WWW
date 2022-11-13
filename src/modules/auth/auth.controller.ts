@@ -5,7 +5,7 @@ import { User } from '../../entities';
 import { UserDto } from '../user/dto/user.dto';
 
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './guards/local.guards';
+import { LocalAuthGuard } from './guards/local.guard';
 
 @Controller('auth')
 export class AuthController {

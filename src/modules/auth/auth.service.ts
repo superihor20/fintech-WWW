@@ -43,17 +43,19 @@ export class AuthService {
     return foundUser;
   }
 
-  async signUp(userDto: UserDto): Promise<User> {
+  async signUp(userDto: UserDto) {
     const hashedPassword = await this.hashPassword(userDto.password);
 
-    return this.userService.create({
+    const newUser = await this.userService.create({
       ...userDto,
       password: hashedPassword,
     });
+
+    return this.signIn(newUser);
   }
 
   async signIn(user: User) {
-    const payload = { email: user.email, sub: user.id };
+    const payload = { email: user.email, id: user.id };
 
     return {
       access_token: this.jwtService.sign(payload),
