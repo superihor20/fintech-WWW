@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Render, UseGuards } from '@nestjs/common';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { Roles } from '../../decorators/role.decorator';
@@ -14,6 +14,7 @@ export class StatisticController {
   constructor(private readonly statisticService: StatisticService) {}
 
   @Get()
+  @Render('statistic')
   getStatistic() {
     return this.statisticService.getStatistic();
   }

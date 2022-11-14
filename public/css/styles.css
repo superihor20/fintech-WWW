@@ -1,0 +1,60 @@
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  background: repeat url('../images/money-png.png');
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  text-align: center;
+  position: sticky;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+ul {
+  list-style-type: disc;
+  list-style-position: inside;
+}
+
+li:not(:last-child) {
+  margin-bottom: 5px;
+}
+
+table {
+  width: 100%;
+}
+
+tr:has(th) {
+  background: #000;
+}
+
+th,
+td {
+  padding: 5px;
+  border: 2px solid #000;
+  color: #fff;
+}
+
+.container {
+  max-width: 80vw;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.main-wrapper {
+  min-width: 100vw;
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  color: #fff;
+}
