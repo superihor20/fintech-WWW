@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { typeormConfig } from '../../configs/typeorm.config';
 import { AuthModule } from '../auth/auth.module';
+import { StatisticModule } from '../statistic/statistic.module';
 import { UserModule } from '../user/user.module';
 import { WalletModule } from '../wallet/wallet.module';
 
@@ -20,6 +21,7 @@ import { WalletModule } from '../wallet/wallet.module';
     AuthModule,
     UserModule,
     WalletModule,
+    StatisticModule,
   ],
 })
 export class AppModule {}
