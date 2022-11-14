@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { Profile, Role, User, Wallet } from '../../entities';
+import { Role, User, Wallet } from '../../entities';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
@@ -19,13 +19,11 @@ export class UserService {
 
   async create(
     userDto: UserDto,
-    profile: Profile,
     wallet: Wallet,
     userRole: Role,
   ): Promise<User> {
     return this.userRepository.save({
       ...userDto,
-      profile,
       wallet,
       role: userRole,
     });

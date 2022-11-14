@@ -10,5 +10,7 @@ export const makeOperationWithWalletAmount = (
       return totalAmount + amount;
     case OperationType.WITHDRAW:
       return totalAmount - amount;
+    case OperationType.INCREASE_BY_PERCANTAGE:
+      return totalAmount + totalAmount * (amount / 100);
   }
 };

@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-import { UserRoles } from '../common/enums/user-roles.enum';
-
-export class RoleTable1668348843465 implements MigrationInterface {
-  name = 'RoleTable1668348843465';
+export class RolesTabel1668421978977 implements MigrationInterface {
+  name = 'RolesTabel1668421978977';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -25,11 +23,9 @@ export class RoleTable1668348843465 implements MigrationInterface {
             ALTER TABLE "users"
             ADD CONSTRAINT "FK_a2cecd1a3531c0b041e29ba46e1" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
-    await this.addRoles(queryRunner);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await this.removeRoles(queryRunner);
     await queryRunner.query(`
             ALTER TABLE "users" DROP CONSTRAINT "FK_a2cecd1a3531c0b041e29ba46e1"
         `);
@@ -42,26 +38,5 @@ export class RoleTable1668348843465 implements MigrationInterface {
     await queryRunner.query(`
             DROP TYPE "public"."roles_name_enum"
         `);
-  }
-
-  private async addRoles(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            INSERT INTO "roles"
-                ("name")
-            VALUES
-                ${Object.values(UserRoles).map((role) => `('${role}')`)}
-        `);
-  }
-
-  private async removeRoles(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            UPDATE "users"
-                "role_id" = NULL
-            WHERE
-                "role_id" IS NOT NULL
-        `);
-    await queryRunner.query(`
-            TRUNCATE TABLE "roles"
-    `);
   }
 }

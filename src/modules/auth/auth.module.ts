@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { jwtConfig } from '../../configs/jwt.config';
 import { Role } from '../../entities';
-import { ProfileModule } from '../profile/profile.module';
 import { UserModule } from '../user/user.module';
 import { WalletModule } from '../wallet/wallet.module';
 
@@ -18,7 +17,6 @@ import { LocalStrategy } from './strategies/local.strategy';
 @Module({
   imports: [
     UserModule,
-    ProfileModule,
     WalletModule,
     PassportModule,
     ConfigModule,
