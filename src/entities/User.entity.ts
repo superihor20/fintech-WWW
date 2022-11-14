@@ -9,7 +9,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Profile } from './Profile.entity';
 import { Role } from './Role.entity';
 import { Wallet } from './Wallet.entity';
 
@@ -29,10 +28,6 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  @OneToOne(() => Profile, { onDelete: 'CASCADE', eager: true })
-  @JoinColumn({ name: 'profile_id', referencedColumnName: 'id' })
-  profile: Profile;
 
   @ManyToOne(() => Role, (role) => role, { eager: true })
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })

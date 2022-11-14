@@ -7,5 +7,4 @@ export interface JwtPayload {
   iat: number;
   exp: number;
   walletId: number;
-  profileId: number;
 }

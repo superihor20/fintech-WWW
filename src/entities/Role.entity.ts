@@ -12,6 +12,6 @@ export class Role {
   @Column({ type: 'enum', enum: UserRoles, unique: true })
   name: UserRoles;
 
-  @OneToMany(() => User, (user) => user.id)
+  @OneToMany(() => User, (user) => user)
   users: User[];
 }
