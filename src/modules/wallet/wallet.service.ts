@@ -3,11 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/enums/errors-messages.enum';
 import { OperationType } from '../../common/enums/operation-type.enum';
+import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amont';
 import { Wallet } from '../../entities';
 
@@ -15,6 +17,8 @@ import { WalletDto } from './dto/wallet.dto';
 
 @Injectable()
 export class WalletService {
+  private readonly depositPercent = 1;
+
   constructor(
     @InjectRepository(Wallet)
     private readonly walletRepository: Repository<Wallet>,
@@ -67,5 +71,32 @@ export class WalletService {
     }
 
     return true;
+  }
+
+  @Cron('0 0 * * *', {
+    timeZone: 'Europe/Kiev',
+  })
+  async dailyDepositeIncrease() {
+    const walletsWithDeposits = await this.walletRepository.find({
+      where: {
+        user: {
+          role: {
+            name: UserRoles.INVESTOR,
+          },
+        },
+        amount: MoreThan(0),
+      },
+    });
+    const updatedAmount = walletsWithDeposits.map((wallet) =>
+      this.walletRepository.merge(wallet, {
+        amount: makeOperationWithWalletAmount(
+          wallet.amount,
+          this.depositPercent,
+          OperationType.INCREASE_BY_PERCANTAGE,
+        ),
+      }),
+    );
+
+    this.walletRepository.save(updatedAmount);
   }
 }

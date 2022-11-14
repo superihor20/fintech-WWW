@@ -38,7 +38,10 @@ export class User {
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
   role: Role;
 
-  @OneToOne(() => Wallet, { onDelete: 'CASCADE', eager: true })
+  @OneToOne(() => Wallet, (wallet) => wallet.user, {
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   @JoinColumn({ name: 'wallet_id', referencedColumnName: 'id' })
   wallet: Wallet;
 }
