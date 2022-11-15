@@ -3,10 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { Role, User, Wallet } from '../../entities';
+import { Role, User } from '../../entities';
 
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -17,16 +16,8 @@ export class UserService {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
-  async create(
-    userDto: UserDto,
-    wallet: Wallet,
-    userRole: Role,
-  ): Promise<User> {
-    return this.userRepository.save({
-      ...userDto,
-      wallet,
-      role: userRole,
-    });
+  async create(user: User): Promise<User> {
+    return this.userRepository.save(user);
   }
 
   private async findOneBy(filters: FindOptionsWhere<User>): Promise<User> {
