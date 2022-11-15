@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { User } from '../../entities';
@@ -20,7 +20,9 @@ export class StatisticService {
     totalAmount: number;
     investors: User[];
   }> {
-    const [, numberOfAllUsers] = await this.userService.findWithFilter();
+    const [, numberOfAllUsers] = await this.userService.findWithFilter({
+      where: { role: { name: Not(UserRoles.ADMIN) } },
+    });
     const [investors, numberOfInvestors] =
       await this.userService.findWithFilter({
         where: { role: { name: UserRoles.INVESTOR } },
