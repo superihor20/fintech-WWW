@@ -23,6 +23,12 @@ export class User {
   @Column({ type: 'varchar' })
   password: string;
 
+  @Column({ name: 'invited_by', type: 'int', nullable: true })
+  invitedBy: number;
+
+  @Column({ name: 'invite_code', type: 'varchar' })
+  inviteCode: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
