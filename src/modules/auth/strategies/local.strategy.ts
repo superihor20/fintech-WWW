@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 
-import { ErrorMessages } from '../../../common/enums/errors-messages.enum';
+import { ErrorMessages } from '../../../common/constants/errors-messages.constant';
 import { User } from '../../../entities';
 import { AuthService } from '../auth.service';
 

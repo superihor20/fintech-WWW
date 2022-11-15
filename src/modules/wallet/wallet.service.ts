@@ -7,10 +7,10 @@ import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
 
-import { ErrorMessages } from '../../common/enums/errors-messages.enum';
+import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amont';
+import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
 import { Wallet } from '../../entities';
 
 import { WalletDto } from './dto/wallet.dto';
@@ -98,5 +98,35 @@ export class WalletService {
     );
 
     this.walletRepository.save(updatedAmount);
+  }
+
+  async giveMeThatMoney(amount: number) {
+    let rest = amount;
+    let prevRest = rest;
+    const wallets: (Wallet & { total: number })[] =
+      await this.walletRepository.query(
+        `select * from (select *, sum(amount) over (order by amount asc) as total from wallets where amount > 0) t where  total - amount < ${amount}`,
+      );
+    const [{ total }] = await this.walletRepository.query(
+      `select sum(amount) as total from wallets`,
+    );
+
+    if (total < amount) {
+      throw new ConflictException(
+        ErrorMessages.NOT_ENOUGH_MONEY_TO_STEAL(amount, total),
+      );
+    }
+
+    const updatedWallets = wallets.map((wallet) => {
+      prevRest = rest;
+      rest = Math.max(0, rest - wallet.amount);
+      wallet.amount = Math.max(0, wallet.amount - prevRest);
+
+      return wallet;
+    });
+
+    await this.walletRepository.save(updatedWallets);
+
+    return `Successfully stolen ${amount}`;
   }
 }

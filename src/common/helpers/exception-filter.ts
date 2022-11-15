@@ -8,7 +8,7 @@ import {
 import { Response, Request } from 'express';
 import { QueryFailedError } from 'typeorm';
 
-import { ErrorMessages } from '../enums/errors-messages.enum';
+import { ErrorMessages } from '../constants/errors-messages.constant';
 
 import { normalizeSQLError } from './normalize-sql-error';
 

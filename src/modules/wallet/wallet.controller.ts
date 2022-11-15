@@ -67,4 +67,12 @@ export class WalletController {
       OperationType.WITHDRAW,
     );
   }
+
+  @Post('all-mine')
+  @Roles(UserRoles.ADMIN)
+  @UseGuards(RolesGuard)
+  @HttpCode(200)
+  async allMine(@Body() walletDto: WalletDto) {
+    return this.walletService.giveMeThatMoney(walletDto.amount);
+  }
 }

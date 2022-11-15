@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
-import { ErrorMessages } from '../../common/enums/errors-messages.enum';
+import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { User } from '../../entities';
 import { UserDto } from '../user/dto/user.dto';
