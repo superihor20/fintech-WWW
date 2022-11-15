@@ -4,12 +4,14 @@ import { MigrationInterface, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { UserRoles } from '../common/enums/user-roles.enum';
 import { Role, User, Wallet } from '../entities';
 
-export class AddRolesAndAdmin1668422184822 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    const queryBuilder = queryRunner.connection.createQueryBuilder();
+export class AddRolesAndUsers1668422184822 implements MigrationInterface {
+  queryBuilder: SelectQueryBuilder<any>;
 
-    await this.addRoles(queryBuilder);
-    await this.addAdmin(queryBuilder);
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    this.queryBuilder = queryRunner.connection.createQueryBuilder();
+
+    await this.addRoles();
+    await this.addAdmin();
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -18,32 +20,32 @@ export class AddRolesAndAdmin1668422184822 implements MigrationInterface {
         `);
   }
 
-  public async addRoles(queryBuilder: SelectQueryBuilder<any>): Promise<void> {
-    await queryBuilder
+  public async addRoles(): Promise<void> {
+    await this.queryBuilder
       .insert()
       .into(Role)
       .values(Object.values(UserRoles).map((role) => ({ name: role })))
       .execute();
   }
 
-  public async addAdmin(queryBuilder: SelectQueryBuilder<any>): Promise<void> {
+  public async addAdmin(): Promise<void> {
     const hashedPassword = await hash(
       process.env.ADMIN_PASSWORD || 'admin123',
       10,
     );
-    const role = await queryBuilder
+    const role = await this.queryBuilder
       .select('id')
       .from(Role, 'r')
       .where(`name='${UserRoles.ADMIN}'`)
       .getRawOne();
 
-    const wallet = await queryBuilder
+    const wallet = await this.queryBuilder
       .insert()
       .into(Wallet)
       .values([{}])
       .execute();
 
-    await queryBuilder
+    await this.queryBuilder
       .insert()
       .into(User)
       .values([
