@@ -13,5 +13,7 @@ export const normalizeSQLError = (
     case SQLErrorsCodes.DUPLICATE: {
       return { status: 409, message };
     }
+    default:
+      return { status: 500, message: ErrorMessages.INTERNAL_SERVER_ERROR };
   }
 };

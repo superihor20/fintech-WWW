@@ -25,6 +25,15 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('me')
+  getMyAccount(@Req() req: Request) {
+    const user: JwtPayload = req.user as JwtPayload;
+
+    return this.userService.findOne(+user.id);
+  }
+
+  @Roles(UserRoles.ADMIN)
+  @UseGuards(RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
