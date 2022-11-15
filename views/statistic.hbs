@@ -1,0 +1,54 @@
+<html lang='en'>
+  <head>
+    <link rel='preconnect' href='https://fonts.googleapis.com' />
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <link
+      href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:ital,wght@0,400;0,700;0,900;1,700&display=swap'
+      rel='stylesheet'
+    />
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <link rel='stylesheet' href='./css/reset.css' />
+    <link rel='stylesheet' href='./css/styles.css' />
+    <title>WWW Statistic</title>
+  </head>
+  <body>
+    <div class='main-wrapper'>
+      <h1>WWW - BEST COMPANY IN THE WORLD!!!</h1>
+
+      <div class='container'>
+        <h2>Users</h2>
+        <ul>
+          <li>Number of users: {{numberOfAllUsers}};</li>
+          <li>Number of investors: {{numberOfInvestors}}.</li>
+        </ul>
+      </div>
+
+      <div class='container'>
+        <h2>Wallets</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each investors}}
+              <tr>
+                <td>{{this.email}}</td>
+                <td>{{this.wallet.amount}}</td>
+              </tr>
+            {{/each}}
+            <tr>
+              <td></td>
+              <td>Total: {{totalAmount}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </body>
+</html>

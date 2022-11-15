@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { Role, User, Wallet } from '../../entities';
@@ -45,6 +45,12 @@ export class UserService {
 
   async findOneByEmail(email: string): Promise<User> {
     return this.findOneBy({ email });
+  }
+
+  async findWithFilter(
+    filter?: FindManyOptions<User>,
+  ): Promise<[User[], number]> {
+    return this.userRepository.findAndCount(filter);
   }
 
   async findAll(): Promise<User[]> {
