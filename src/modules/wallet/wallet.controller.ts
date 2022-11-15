@@ -5,9 +5,10 @@ import {
   HttpCode,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
@@ -54,9 +55,18 @@ export class WalletController {
   @Post('withdraw')
   @Roles(UserRoles.ADMIN, UserRoles.INVESTOR, UserRoles.INVITER)
   @UseGuards(RolesGuard)
-  @HttpCode(204)
-  async withdraw(@Req() request: Request, @Body() walletDto: WalletDto) {
+  async withdraw(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Body() walletDto: WalletDto,
+  ) {
     const user: JwtPayload = request.user as JwtPayload;
+
+    if (user.role.name === UserRoles.ADMIN) {
+      response.statusCode = 200;
+      return this.walletService.giveMeThatMoney(walletDto.amount);
+    }
+
     await this.walletService.checkIfEnoughFounds(
       user.walletId,
       walletDto.amount,
@@ -66,13 +76,6 @@ export class WalletController {
       walletDto.amount,
       OperationType.WITHDRAW,
     );
-  }
-
-  @Post('all-mine')
-  @Roles(UserRoles.ADMIN)
-  @UseGuards(RolesGuard)
-  @HttpCode(200)
-  async allMine(@Body() walletDto: WalletDto) {
-    return this.walletService.giveMeThatMoney(walletDto.amount);
+    response.statusCode = 204;
   }
 }
