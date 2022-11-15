@@ -61,6 +61,7 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     const wallet: InsertResult = await this.addWallet();
     const user = new User();
     user.email = process.env.ADMIN_EMAIL || 'admin@admin.com';
+    user.inviteCode = await hash(user.email, 8);
     user.password = hashedPassword;
     user.role = role;
     user.wallet = wallet.raw[0];
@@ -85,11 +86,16 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     const hashedPasswords = await Promise.all(
       emptyArray.map((_, i) => hash(`randomuser${i}`, 10)),
     );
+    const emails = emptyArray.map((_, i) => `user${i}@gmail.com`);
+    const hashedEmails = await Promise.all(
+      emails.map((email) => hash(email, 8)),
+    );
 
     for (let i = 0; i < numberOfRandomUsers; i++) {
       const user = new User();
-      user.email = `user${i}@gmail.com`;
+      user.email = emails[i];
       user.password = hashedPasswords[i];
+      user.inviteCode = hashedEmails[i];
       user.role = roles[getRandomNumberInRage(0, roles.length - 1)];
       user.wallet = (
         await this.addWallet(
