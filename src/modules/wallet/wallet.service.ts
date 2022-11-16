@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
 
@@ -88,7 +88,9 @@ export class WalletService {
     return true;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron('0 0 * * *', {
+    timeZone: 'Europe/Kiev',
+  })
   async dailyDepositeIncrease() {
     const walletsWithDeposits = await this.walletRepository.find({
       where: [
