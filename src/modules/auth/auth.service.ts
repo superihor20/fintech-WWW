@@ -33,7 +33,9 @@ export class AuthService {
   }
 
   async validateUser(userDto: CreateUserDto): Promise<User> {
-    const foundUser = await this.userService.findOneByEmail(userDto.email);
+    const foundUser = await this.userService.findOneByEmailUnsafe(
+      userDto.email,
+    );
 
     if (!foundUser) {
       throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
