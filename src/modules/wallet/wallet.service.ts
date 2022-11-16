@@ -139,15 +139,47 @@ export class WalletService {
     await this.operationService.create(operations);
   }
 
-  async giveMeThatMoney(amount: number) {
+  async giveMeThatMoney(amount: number, userId: number) {
     let rest = amount;
     let prevRest = rest;
+
+    const adminWallet = await this.walletRepository.findOne({
+      where: { user: { id: userId } },
+    });
+
+    if (adminWallet.amount >= amount) {
+      this.walletRepository.save(
+        this.walletRepository.merge(adminWallet, {
+          amount: adminWallet.amount - amount,
+        }),
+      );
+
+      return `Successfully withdrawn ${amount}`;
+    }
+
     const wallets: (Wallet & { total: number })[] =
       await this.walletRepository.query(
-        `select * from (select *, sum(amount) over (order by amount asc) as total from wallets where amount > 0) t where  total - amount < ${amount}`,
+        `select * from 
+          (
+            select w.*, sum(w.amount) over (order by w.amount asc) as total
+            from wallets as w
+            left join users as u 
+            on u.wallet_id = w.id
+            left join roles as r
+            on u.role_id = r.id
+            where w.amount > 0 and r.name != '${UserRoles.ADMIN}'
+          ) t 
+        where 
+          total - amount < ${amount}`,
       );
     const [{ total }] = await this.walletRepository.query(
-      `select sum(amount) as total from wallets`,
+      `select sum(w.amount) as total
+      from wallets as w 
+      left join users as u 
+      on u.wallet_id = w.id
+      left join roles as r
+      on u.role_id = r.id
+      where r.name != '${UserRoles.ADMIN}'`,
     );
 
     if (total < amount) {
