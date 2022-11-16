@@ -8,9 +8,18 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
+import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
@@ -20,9 +29,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UserService } from '../user/user.service';
 
 import { CreateOrUpdateWalletDto } from './dto/create-or-update-wallet.dto';
+import { WalletDto } from './dto/wallet.dto';
 import { WalletService } from './wallet.service';
 
 @ApiTags('Wallet')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @UseGuards(JwtAuthGuard)
 @Controller('wallet')
 export class WalletController {
@@ -32,6 +44,8 @@ export class WalletController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get current user wallet' })
+  @ApiOkResponse({ type: WalletDto })
   async findOne(@Req() request: Request) {
     const user: JwtPayload = request.user as JwtPayload;
 
@@ -40,6 +54,8 @@ export class WalletController {
 
   @Post('deposite')
   @HttpCode(204)
+  @ApiOperation({ summary: 'Make a deposite to the current user wallet' })
+  @ApiNoContentResponse()
   async deposite(
     @Req() request: Request,
     @Body() walletDto: CreateOrUpdateWalletDto,
@@ -60,6 +76,10 @@ export class WalletController {
   @Post('withdraw')
   @Roles(UserRoles.ADMIN, UserRoles.INVESTOR, UserRoles.INVITER)
   @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Withdraw from current user wallet' })
+  @ApiNoContentResponse()
+  @ApiOkResponse({ type: 'string' })
+  @ApiConflictResponse({ description: ErrorMessages.NOT_ENOUGH_MONEY })
   async withdraw(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
