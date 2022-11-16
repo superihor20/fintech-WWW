@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
@@ -47,13 +51,24 @@ export class AuthService {
     return foundUser;
   }
 
-  async signUp(userDto: UserDto) {
+  async signUp(userDto: UserDto, code?: string) {
     const user = new User();
     user.email = userDto.email;
     user.password = await this.hashPassword(userDto.password);
     user.role = await this.userService.getUserRole(UserRoles.USER);
     user.wallet = await this.walletService.create({ amount: 0 });
     user.inviteCode = await hash(userDto.email, this.emailRounds);
+
+    if (code) {
+      const inviter = await this.userService.findOneByInviteCode(code);
+
+      if (!inviter) {
+        throw new ConflictException(ErrorMessages.INVITER_CODE_IS_NOT_VALID);
+      }
+
+      user.invitedBy = inviter.id;
+    }
+
     const newUser = await this.userService.create(user);
 
     return this.signIn(newUser);

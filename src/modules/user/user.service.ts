@@ -38,6 +38,10 @@ export class UserService {
     return this.findOneBy({ email });
   }
 
+  async findOneByInviteCode(code: string): Promise<User> {
+    return this.userRepository.findOneBy({ inviteCode: code });
+  }
+
   async findWithFilter(
     filter?: FindManyOptions<User>,
   ): Promise<[User[], number]> {
