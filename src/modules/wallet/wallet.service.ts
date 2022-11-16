@@ -102,7 +102,7 @@ export class WalletService {
         amount: makeOperationWithWalletAmount(
           wallet.amount,
           this.depositPercent,
-          OperationType.INCREASE_BY_PERCANTAGE,
+          OperationType.DAILY_INCREASE,
         ),
       }),
     );
