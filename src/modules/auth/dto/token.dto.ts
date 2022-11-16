@@ -1,9 +1,6 @@
 import { ApiResponseProperty } from '@nestjs/swagger';
 
-export class WalletDto {
+export class TokenDto {
   @ApiResponseProperty()
-  id: number;
-
-  @ApiResponseProperty()
-  amount: number;
+  access_token: string;
 }

@@ -1,9 +1,11 @@
 import { ApiResponseProperty } from '@nestjs/swagger';
 
-export class WalletDto {
+import { UserRoles } from '../../../common/enums/user-roles.enum';
+
+export class RoleDto {
   @ApiResponseProperty()
   id: number;
 
   @ApiResponseProperty()
-  amount: number;
+  name: UserRoles;
 }

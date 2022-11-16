@@ -9,7 +9,7 @@ import { hash, compare } from 'bcrypt';
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { User } from '../../entities';
-import { UserDto } from '../user/dto/user.dto';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { WalletService } from '../wallet/wallet.service';
 
@@ -32,7 +32,7 @@ export class AuthService {
     return compare(password, hashedPassword);
   }
 
-  async validateUser(userDto: UserDto): Promise<User> {
+  async validateUser(userDto: CreateUserDto): Promise<User> {
     const foundUser = await this.userService.findOneByEmail(userDto.email);
 
     if (!foundUser) {
@@ -51,7 +51,7 @@ export class AuthService {
     return foundUser;
   }
 
-  async signUp(userDto: UserDto, code?: string) {
+  async signUp(userDto: CreateUserDto, code?: string) {
     const user = new User();
     user.email = userDto.email;
     user.password = await this.hashPassword(userDto.password);
