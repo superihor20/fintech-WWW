@@ -17,6 +17,7 @@ export class StatisticService {
   async getStatistic(): Promise<{
     numberOfAllUsers: number;
     numberOfInvestors: number;
+    numberOfInviters: number;
     totalAmount: number;
     investors: User[];
   }> {
@@ -25,8 +26,15 @@ export class StatisticService {
     });
     const [investors, numberOfInvestors] =
       await this.userService.findWithFilter({
-        where: { role: { name: UserRoles.INVESTOR } },
+        where: [
+          { role: { name: UserRoles.INVESTOR } },
+          { role: { name: UserRoles.INVITER } },
+        ],
+        order: { wallet: { amount: 'DESC' } },
       });
+    const [, numberOfInviters] = await this.userService.findWithFilter({
+      where: [{ role: { name: UserRoles.INVITER } }],
+    });
     const { totalAmount } = await this.userRepository
       .createQueryBuilder('user')
       .leftJoin('user.wallet', 'wallets')
@@ -38,6 +46,7 @@ export class StatisticService {
     return {
       numberOfAllUsers,
       numberOfInvestors,
+      numberOfInviters,
       totalAmount,
       investors,
     };

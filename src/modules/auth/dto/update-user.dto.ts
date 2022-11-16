@@ -5,11 +5,15 @@ export class UpdateUserDto {
   @IsEmail()
   @IsOptional()
   @ApiProperty({ description: 'Should be email', required: false })
-  email: string;
+  email?: string;
 
   @IsString()
   @MinLength(8)
   @IsOptional()
   @ApiProperty({ minLength: 8, required: false })
-  password: string;
+  password?: string;
+
+  @IsString()
+  @IsOptional()
+  inviteCode?: string;
 }

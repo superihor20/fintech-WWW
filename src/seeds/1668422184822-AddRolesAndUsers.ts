@@ -20,7 +20,7 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
 
     await this.addRoles();
     await this.addAdmin();
-    const roles = await this.getRolesBesideAdmin();
+    const roles = await this.getRolesBesideAdminAndInviter();
     await this.addRandomUsers(roles);
   }
 
@@ -69,15 +69,16 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     await this.addUsers([user]);
   }
 
-  public async getRolesBesideAdmin(): Promise<Role[]> {
+  public async getRolesBesideAdminAndInviter(): Promise<Role[]> {
     const roles: Role[] = await this.roleQueryBuilderSelect
-      .where(`name!='${UserRoles.ADMIN}'`)
+      .where(`name!='${UserRoles.ADMIN}' AND name!='${UserRoles.INVITER}'`)
       .getRawMany();
 
     return roles;
   }
 
-  public async addRandomUsers(roles: Role[]): Promise<void> {
+  public async addRandomUsers(availableRoles: Role[]): Promise<void> {
+    const canInvite = [UserRoles.INVESTOR, UserRoles.INVITER, UserRoles.ADMIN];
     const numberOfRandomUsers = 100;
     const minAmount = 100;
     const maxAmount = 100_000_000;
@@ -87,16 +88,21 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
       emptyArray.map((_, i) => hash(`randomuser${i}`, 10)),
     );
     const emails = emptyArray.map((_, i) => `user${i}@gmail.com`);
-    const hashedEmails = await Promise.all(
-      emails.map((email) => hash(email, 8)),
+    const roles = emptyArray.map(
+      () => availableRoles[getRandomNumberInRage(0, availableRoles.length - 1)],
+    );
+    const inviteCodes = await Promise.all(
+      emails.map((email, i) =>
+        canInvite.includes(roles[i].name) ? hash(email, 8) : null,
+      ),
     );
 
     for (let i = 0; i < numberOfRandomUsers; i++) {
       const user = new User();
       user.email = emails[i];
       user.password = hashedPasswords[i];
-      user.inviteCode = hashedEmails[i];
-      user.role = roles[getRandomNumberInRage(0, roles.length - 1)];
+      user.inviteCode = inviteCodes[i];
+      user.role = roles[i];
       user.wallet = (
         await this.addWallet(
           user.role.name === UserRoles.INVESTOR

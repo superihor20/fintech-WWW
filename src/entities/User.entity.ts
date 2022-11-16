@@ -26,7 +26,7 @@ export class User {
   @Column({ name: 'invited_by', type: 'int', nullable: true })
   invitedBy: number;
 
-  @Column({ name: 'invite_code', type: 'varchar' })
+  @Column({ name: 'invite_code', type: 'varchar', nullable: true })
   inviteCode: string;
 
   @CreateDateColumn({ name: 'created_at' })

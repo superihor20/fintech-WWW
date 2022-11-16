@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { hash } from 'bcrypt';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
@@ -8,6 +9,8 @@ import { UpdateUserDto } from '../auth/dto/update-user.dto';
 
 @Injectable()
 export class UserService {
+  private readonly inviteCodeRounds = 8;
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -81,5 +84,9 @@ export class UserService {
 
   async getUserRole(name: UserRoles): Promise<Role> {
     return this.roleRepository.findOneBy({ name });
+  }
+
+  async generateInviteCode(email: string): Promise<string> {
+    return hash(email, this.inviteCodeRounds);
   }
 }

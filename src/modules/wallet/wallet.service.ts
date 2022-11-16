@@ -78,14 +78,24 @@ export class WalletService {
   })
   async dailyDepositeIncrease() {
     const walletsWithDeposits = await this.walletRepository.find({
-      where: {
-        user: {
-          role: {
-            name: UserRoles.INVESTOR,
+      where: [
+        {
+          user: {
+            role: {
+              name: UserRoles.INVESTOR,
+            },
           },
+          amount: MoreThan(0),
         },
-        amount: MoreThan(0),
-      },
+        {
+          user: {
+            role: {
+              name: UserRoles.INVITER,
+            },
+          },
+          amount: MoreThan(0),
+        },
+      ],
     });
     const updatedAmount = walletsWithDeposits.map((wallet) =>
       this.walletRepository.merge(wallet, {
