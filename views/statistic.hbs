@@ -22,6 +22,7 @@
         <ul>
           <li>Number of users: {{numberOfAllUsers}};</li>
           <li>Number of inviters: {{numberOfInviters}};</li>
+          <li>Number of invited users: {{numberOfInvitedUsers}};</li>
           <li>Number of investors: {{numberOfInvestors}}.</li>
         </ul>
       </div>
@@ -45,6 +46,30 @@
             <tr>
               <td></td>
               <td>Total: {{totalAmount}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class='container'>
+        <h2>Inviters</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Number of invited users</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each invitersInfo}}
+              <tr>
+                <td>{{this.email}}</td>
+                <td>{{this.numberofinvitedusers}}</td>
+              </tr>
+            {{/each}}
+            <tr>
+              <td></td>
+              <td>Total: {{numberOfInvitedUsers}}</td>
             </tr>
           </tbody>
         </table>

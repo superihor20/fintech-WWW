@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
+import { InvitersInfo } from '../../common/interfaces/inviters-info.interface';
 import { User } from '../../entities';
 import { UserService } from '../user/user.service';
 
@@ -18,8 +19,10 @@ export class StatisticService {
     numberOfAllUsers: number;
     numberOfInvestors: number;
     numberOfInviters: number;
+    numberOfInvitedUsers: number;
     totalAmount: number;
     investors: User[];
+    invitersInfo: InvitersInfo;
   }> {
     const [, numberOfAllUsers] = await this.userService.findWithFilter({
       where: { role: { name: Not(UserRoles.ADMIN) } },
@@ -32,23 +35,38 @@ export class StatisticService {
         ],
         order: { wallet: { amount: 'DESC' } },
       });
-    const [, numberOfInviters] = await this.userService.findWithFilter({
-      where: [{ role: { name: UserRoles.INVITER } }],
+    const [, numberOfInvitedUsers] = await this.userService.findWithFilter({
+      where: { invitedBy: Not(IsNull()) },
     });
+    const invitersInfo: InvitersInfo = await this.userRepository.query(
+      `
+        SELECT 
+          COUNT(u.invited_by) AS numberOfInvitedUsers,
+          (SELECT u1.email FROM users AS u1 WHERE u.invited_by=u1.id)
+        FROM
+         users AS u 
+        WHERE
+         u.invited_by IS NOT NULL
+        GROUP BY 
+          u.invited_by
+        ORDER BY
+          numberOfInvitedUsers DESC
+      `,
+    );
     const { totalAmount } = await this.userRepository
       .createQueryBuilder('user')
       .leftJoin('user.wallet', 'wallets')
       .select('SUM(wallets.amount)', 'totalAmount')
       .getRawOne();
 
-    console.log(totalAmount);
-
     return {
       numberOfAllUsers,
       numberOfInvestors,
-      numberOfInviters,
+      numberOfInviters: invitersInfo.length,
+      numberOfInvitedUsers,
       totalAmount,
       investors,
+      invitersInfo,
     };
   }
 }
