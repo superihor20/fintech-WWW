@@ -4,11 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+import { Operation } from './Operation.entity';
 import { Role } from './Role.entity';
 import { Wallet } from './Wallet.entity';
 
@@ -45,4 +47,7 @@ export class User {
   })
   @JoinColumn({ name: 'wallet_id', referencedColumnName: 'id' })
   wallet: Wallet;
+
+  @OneToMany(() => Operation, (operation) => operation)
+  operation: Operation;
 }

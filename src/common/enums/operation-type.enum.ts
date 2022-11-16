@@ -1,5 +1,6 @@
 export enum OperationType {
   DEPOSITE = 'deposite',
   WITHDRAW = 'withdraw',
-  INCREASE_BY_PERCANTAGE = 'increase by percentage',
+  DAILY_INCREASE = 'daily increase',
+  INVITER_BONUS = 'inviter bonus',
 }
