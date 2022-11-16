@@ -12,9 +12,6 @@ export class UserDto {
   email: string;
 
   @ApiResponseProperty()
-  password: string;
-
-  @ApiResponseProperty()
   invitedBy: number;
 
   @ApiResponseProperty()

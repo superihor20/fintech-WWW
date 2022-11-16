@@ -37,6 +37,13 @@ export class UserService {
     return this.findOneBy({ email });
   }
 
+  async findOneByEmailUnsafe(email: string): Promise<User> {
+    return this.userRepository.findOne({
+      select: { email: true, password: true, id: true },
+      where: { email },
+    });
+  }
+
   async findOneByInviteCode(code: string): Promise<User> {
     return this.userRepository.findOneBy({ inviteCode: code });
   }
