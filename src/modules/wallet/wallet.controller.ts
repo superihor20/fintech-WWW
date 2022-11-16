@@ -70,7 +70,10 @@ export class WalletController {
     );
 
     if (user.role.id === userRole.id) {
+      const inviteCode = await this.userService.generateInviteCode(user.email);
+
       await this.userService.updateUserRole(user.id, UserRoles.INVESTOR);
+      await this.userService.update(user.id, { inviteCode });
     }
   }
 
