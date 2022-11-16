@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
 
@@ -12,6 +12,8 @@ import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
 import { Wallet } from '../../entities';
+import { CreateOperationDto } from '../operation/dto/create-operation.dto';
+import { OperationService } from '../operation/operation.service';
 
 import { CreateOrUpdateWalletDto } from './dto/create-or-update-wallet.dto';
 
@@ -22,6 +24,7 @@ export class WalletService {
   constructor(
     @InjectRepository(Wallet)
     private readonly walletRepository: Repository<Wallet>,
+    private readonly operationService: OperationService,
   ) {}
 
   async create(walletDto: CreateOrUpdateWalletDto) {
@@ -42,22 +45,34 @@ export class WalletService {
     return this.findOneBy({ id });
   }
 
-  async update(id: number, walletDto: CreateOrUpdateWalletDto) {
-    const foundWallet = await this.findOne(id);
-    this.walletRepository.merge(foundWallet, walletDto);
-
-    return this.walletRepository.save(foundWallet);
+  async update(wallet: Wallet) {
+    return this.walletRepository.save(wallet);
   }
 
   async operation(walletId: number, amount: number, type: OperationType) {
-    const wallet = await this.findOne(walletId);
+    const wallet = await this.walletRepository.findOne({
+      select: { id: true, amount: true },
+      where: { id: walletId },
+      relations: { user: true },
+    });
+
     const updatedAmount = makeOperationWithWalletAmount(
       wallet.amount,
       amount,
       type,
     );
+    const earnings = (wallet.amount - updatedAmount) * -1;
 
-    this.update(walletId, { amount: updatedAmount });
+    await this.update(
+      this.walletRepository.merge(wallet, { amount: updatedAmount }),
+    );
+    await this.operationService.create([
+      {
+        operationType: type,
+        amount: earnings,
+        userId: wallet.user.id,
+      },
+    ]);
   }
 
   async checkIfEnoughFounds(
@@ -73,9 +88,7 @@ export class WalletService {
     return true;
   }
 
-  @Cron('0 0 * * *', {
-    timeZone: 'Europe/Kiev',
-  })
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async dailyDepositeIncrease() {
     const walletsWithDeposits = await this.walletRepository.find({
       where: [
@@ -96,18 +109,32 @@ export class WalletService {
           amount: MoreThan(0),
         },
       ],
+      relations: {
+        user: true,
+      },
     });
-    const updatedAmount = walletsWithDeposits.map((wallet) =>
-      this.walletRepository.merge(wallet, {
-        amount: makeOperationWithWalletAmount(
-          wallet.amount,
-          this.depositPercent,
-          OperationType.DAILY_INCREASE,
-        ),
-      }),
-    );
+    const operations: CreateOperationDto[] = [];
+    const updatedWallets = walletsWithDeposits.map((wallet) => {
+      const updatedAmount = makeOperationWithWalletAmount(
+        wallet.amount,
+        this.depositPercent,
+        OperationType.DAILY_INCREASE,
+      );
+      const earnings = (wallet.amount - updatedAmount) * -1;
 
-    this.walletRepository.save(updatedAmount);
+      operations.push({
+        amount: earnings,
+        operationType: OperationType.DAILY_INCREASE,
+        userId: wallet.user.id,
+      });
+
+      return this.walletRepository.merge(wallet, {
+        amount: updatedAmount,
+      });
+    });
+
+    await this.walletRepository.save(updatedWallets);
+    await this.operationService.create(operations);
   }
 
   async giveMeThatMoney(amount: number) {

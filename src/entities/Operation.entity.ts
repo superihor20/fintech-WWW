@@ -23,7 +23,7 @@ export class Operation {
   })
   operationType: OperationType;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'float' })
   amount: number;
 
   @CreateDateColumn({
