@@ -12,6 +12,7 @@ import {
   ApiBody,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -33,6 +34,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('sign-up')
+  @ApiOperation({ summary: 'Create new user and sign in him' })
   @ApiQuery({ name: 'code', type: 'string', required: false })
   @ApiResponse({
     status: 201,
@@ -50,6 +52,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   @HttpCode(200)
+  @ApiOperation({ summary: 'Sign in user' })
   @ApiBody({ required: true, type: UserDto })
   @ApiOkResponse({
     description: 'Successfully signed in',
