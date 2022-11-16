@@ -50,6 +50,19 @@ export class UserController {
     return this.userService.findOne(+user.id);
   }
 
+  @Get('get-referall-link')
+  @Roles(UserRoles.ADMIN, UserRoles.INVESTOR, UserRoles.INVITER)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Return referall link' })
+  @ApiOkResponse({ description: 'In response will be referall link' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
+  async getReferallLink(@Req() req: Request) {
+    const user: JwtPayload = req.user as JwtPayload;
+    const foundUser = await this.userService.findOne(+user.id);
+
+    return `${process.env.HOST}/auth/sign-up?code=${foundUser.inviteCode}`;
+  }
+
   @Roles(UserRoles.ADMIN)
   @UseGuards(RolesGuard)
   @Get(':id')
