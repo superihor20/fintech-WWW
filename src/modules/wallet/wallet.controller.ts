@@ -19,7 +19,7 @@ import { RolesGuard } from '../../guards/roles.guards';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UserService } from '../user/user.service';
 
-import { WalletDto } from './dto/wallet.dto';
+import { CreateOrUpdateWalletDto } from './dto/create-or-update-wallet.dto';
 import { WalletService } from './wallet.service';
 
 @ApiTags('Wallet')
@@ -40,7 +40,10 @@ export class WalletController {
 
   @Post('deposite')
   @HttpCode(204)
-  async deposite(@Req() request: Request, @Body() walletDto: WalletDto) {
+  async deposite(
+    @Req() request: Request,
+    @Body() walletDto: CreateOrUpdateWalletDto,
+  ) {
     const user: JwtPayload = request.user as JwtPayload;
     const userRole = await this.userService.getUserRole(UserRoles.USER);
     await this.walletService.operation(
@@ -60,7 +63,7 @@ export class WalletController {
   async withdraw(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-    @Body() walletDto: WalletDto,
+    @Body() walletDto: CreateOrUpdateWalletDto,
   ) {
     const user: JwtPayload = request.user as JwtPayload;
 

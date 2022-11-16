@@ -21,10 +21,10 @@ import { Request } from 'express';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { User } from '../../entities';
-import { UserDto } from '../user/dto/user.dto';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
 
 import { AuthService } from './auth.service';
-import { TokenDto } from './dtos/token.dto';
+import { TokenDto } from './dto/token.dto';
 import { LocalAuthGuard } from './guards/local.guard';
 
 @ApiTags('Auth')
@@ -45,7 +45,7 @@ export class AuthController {
     status: 409,
     description: ErrorMessages.INVITER_CODE_IS_NOT_VALID,
   })
-  async signUp(@Body() userDto: UserDto, @Query('code') code?: string) {
+  async signUp(@Body() userDto: CreateUserDto, @Query('code') code?: string) {
     return this.authService.signUp(userDto, code);
   }
 
@@ -53,7 +53,7 @@ export class AuthController {
   @Post('sign-in')
   @HttpCode(200)
   @ApiOperation({ summary: 'Sign in user' })
-  @ApiBody({ required: true, type: UserDto })
+  @ApiBody({ required: true, type: CreateUserDto })
   @ApiOkResponse({
     description: 'Successfully signed in',
     type: TokenDto,

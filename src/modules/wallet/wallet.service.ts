@@ -13,7 +13,7 @@ import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
 import { Wallet } from '../../entities';
 
-import { WalletDto } from './dto/wallet.dto';
+import { CreateOrUpdateWalletDto } from './dto/create-or-update-wallet.dto';
 
 @Injectable()
 export class WalletService {
@@ -24,7 +24,7 @@ export class WalletService {
     private readonly walletRepository: Repository<Wallet>,
   ) {}
 
-  async create(walletDto: WalletDto) {
+  async create(walletDto: CreateOrUpdateWalletDto) {
     return this.walletRepository.save(walletDto);
   }
 
@@ -42,7 +42,7 @@ export class WalletService {
     return this.findOneBy({ id });
   }
 
-  async update(id: number, walletDto: WalletDto) {
+  async update(id: number, walletDto: CreateOrUpdateWalletDto) {
     const foundWallet = await this.findOne(id);
     this.walletRepository.merge(foundWallet, walletDto);
 

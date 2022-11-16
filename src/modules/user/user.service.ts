@@ -4,8 +4,7 @@ import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { Role, User } from '../../entities';
-
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from '../auth/dto/update-user.dto';
 
 @Injectable()
 export class UserService {
