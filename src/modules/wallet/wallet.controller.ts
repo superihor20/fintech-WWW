@@ -11,6 +11,7 @@ import {
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -80,6 +81,7 @@ export class WalletController {
   @ApiNoContentResponse()
   @ApiOkResponse({ type: 'string' })
   @ApiConflictResponse({ description: ErrorMessages.NOT_ENOUGH_MONEY })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   async withdraw(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,

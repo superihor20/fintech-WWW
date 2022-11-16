@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -55,6 +56,7 @@ export class UserController {
   @ApiOperation({ summary: 'Return found user by id (only for admin)' })
   @ApiOkResponse({ type: UserDto })
   @ApiNotFoundResponse({ description: ErrorMessages.USER_NOT_FOUND })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
@@ -64,6 +66,7 @@ export class UserController {
   @Get()
   @ApiOperation({ summary: 'Return all users (only for admin)' })
   @ApiOkResponse({ type: [UserDto] })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   findAll() {
     return this.userService.findAll();
   }
@@ -83,6 +86,7 @@ export class UserController {
   @HttpCode(204)
   @ApiOperation({ summary: 'Remove user by id (only for admin)' })
   @ApiNotFoundResponse({ description: ErrorMessages.USER_NOT_FOUND })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   @ApiNoContentResponse()
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
