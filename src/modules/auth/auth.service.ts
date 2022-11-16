@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
@@ -11,7 +15,8 @@ import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
-  private readonly salt = 10;
+  private readonly passwordRounds = 10;
+  private readonly emailRounds = 8;
 
   constructor(
     private readonly userService: UserService,
@@ -20,7 +25,7 @@ export class AuthService {
   ) {}
 
   async hashPassword(password: string): Promise<string> {
-    return hash(password, this.salt);
+    return hash(password, this.passwordRounds);
   }
 
   async compare(password: string, hashedPassword: string): Promise<boolean> {
@@ -46,18 +51,25 @@ export class AuthService {
     return foundUser;
   }
 
-  async signUp(userDto: UserDto) {
-    const hashedPassword = await this.hashPassword(userDto.password);
-    const userRole = await this.userService.getUserRole(UserRoles.USER);
-    const newWallet = await this.walletService.create({ amount: 0 });
-    const newUser = await this.userService.create(
-      {
-        ...userDto,
-        password: hashedPassword,
-      },
-      newWallet,
-      userRole,
-    );
+  async signUp(userDto: UserDto, code?: string) {
+    const user = new User();
+    user.email = userDto.email;
+    user.password = await this.hashPassword(userDto.password);
+    user.role = await this.userService.getUserRole(UserRoles.USER);
+    user.wallet = await this.walletService.create({ amount: 0 });
+    user.inviteCode = await hash(userDto.email, this.emailRounds);
+
+    if (code) {
+      const inviter = await this.userService.findOneByInviteCode(code);
+
+      if (!inviter) {
+        throw new ConflictException(ErrorMessages.INVITER_CODE_IS_NOT_VALID);
+      }
+
+      user.invitedBy = inviter.id;
+    }
+
+    const newUser = await this.userService.create(user);
 
     return this.signIn(newUser);
   }
