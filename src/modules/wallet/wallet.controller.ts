@@ -8,6 +8,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 import { OperationType } from '../../common/enums/operation-type.enum';
@@ -21,6 +22,7 @@ import { UserService } from '../user/user.service';
 import { WalletDto } from './dto/wallet.dto';
 import { WalletService } from './wallet.service';
 
+@ApiTags('Wallet')
 @UseGuards(JwtAuthGuard)
 @Controller('wallet')
 export class WalletController {
