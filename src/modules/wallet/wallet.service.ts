@@ -11,7 +11,7 @@ import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
-import { Wallet } from '../../entities';
+import { User, Wallet } from '../../entities';
 import { CreateOperationDto } from '../operation/dto/create-operation.dto';
 import { OperationService } from '../operation/operation.service';
 
@@ -49,16 +49,8 @@ export class WalletService {
       : this.walletRepository.save(wallet);
   }
 
-  async operation(
-    walletId: number,
-    operationAmount: number,
-    type: OperationType,
-  ) {
-    const wallet = await this.walletRepository.findOne({
-      select: { id: true, amount: true },
-      where: { id: walletId },
-      relations: { user: true },
-    });
+  async operation(user: User, operationAmount: number, type: OperationType) {
+    const { wallet } = user;
 
     const { updatedAmount, earnings } = makeOperationWithWalletAmount(
       wallet.amount,
