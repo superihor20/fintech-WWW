@@ -11,7 +11,7 @@ import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
-import { User, Wallet } from '../../entities';
+import { Wallet } from '../../entities';
 import { CreateOperationDto } from '../operation/dto/create-operation.dto';
 import { OperationService } from '../operation/operation.service';
 
@@ -49,9 +49,11 @@ export class WalletService {
       : this.walletRepository.save(wallet);
   }
 
-  async operation(user: User, operationAmount: number, type: OperationType) {
-    const { wallet } = user;
-
+  async operation(
+    wallet: Wallet,
+    operationAmount: number,
+    type: OperationType,
+  ) {
     const { updatedAmount, earnings } = makeOperationWithWalletAmount(
       wallet.amount,
       operationAmount,
