@@ -7,10 +7,11 @@ import { UserModule } from '../user/user.module';
 
 import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
+import { WalletTaskService } from './wallet.task.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Wallet]), UserModule, OperationModule],
-  providers: [WalletService],
+  providers: [WalletService, WalletTaskService],
   exports: [WalletService],
   controllers: [WalletController],
 })
