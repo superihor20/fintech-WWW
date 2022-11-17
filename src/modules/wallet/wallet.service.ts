@@ -50,16 +50,10 @@ export class WalletService {
   }
 
   async operation(
-    walletId: number,
+    wallet: Wallet,
     operationAmount: number,
     type: OperationType,
   ) {
-    const wallet = await this.walletRepository.findOne({
-      select: { id: true, amount: true },
-      where: { id: walletId },
-      relations: { user: true },
-    });
-
     const { updatedAmount, earnings } = makeOperationWithWalletAmount(
       wallet.amount,
       operationAmount,
