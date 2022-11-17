@@ -8,7 +8,7 @@ export class CreateOperationDto {
 
   @IsNumber()
   @IsPositive()
-  amount: number;
+  earnings: number;
 
   @IsNumber()
   userId: number;

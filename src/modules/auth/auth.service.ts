@@ -8,7 +8,7 @@ import { hash, compare } from 'bcrypt';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { User } from '../../entities';
+import { User, Wallet } from '../../entities';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { WalletService } from '../wallet/wallet.service';
@@ -54,10 +54,11 @@ export class AuthService {
 
   async signUp(userDto: CreateUserDto, code?: string) {
     const user = new User();
+    const wallet = new Wallet();
     user.email = userDto.email;
     user.password = await this.hashPassword(userDto.password);
     user.role = await this.userService.getUserRole(UserRoles.USER);
-    user.wallet = await this.walletService.create({ amount: 0 });
+    user.wallet = await this.walletService.create(wallet);
 
     if (code) {
       const inviter = await this.userService.findOneByInviteCode(code);
@@ -80,7 +81,6 @@ export class AuthService {
     const payload = {
       email: user.email,
       id: user.id,
-      role: user.role,
       walletId: user.wallet.id,
     };
 

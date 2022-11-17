@@ -48,7 +48,7 @@ export class WalletController {
   @ApiOperation({ summary: 'Get current user wallet' })
   @ApiOkResponse({ type: WalletDto })
   async findOne(@Req() request: Request) {
-    const user: JwtPayload = request.user as JwtPayload;
+    const user = request.user as JwtPayload;
 
     return this.walletService.findOne(user.walletId);
   }
@@ -61,15 +61,17 @@ export class WalletController {
     @Req() request: Request,
     @Body() walletDto: CreateOrUpdateWalletDto,
   ) {
-    const user: JwtPayload = request.user as JwtPayload;
+    const user = request.user as JwtPayload;
+    const foundUser = await this.userService.findOne(user.id);
     const userRole = await this.userService.getUserRole(UserRoles.USER);
+
     await this.walletService.operation(
       user.walletId,
       walletDto.amount,
       OperationType.DEPOSITE,
     );
 
-    if (user.role.id === userRole.id) {
+    if (foundUser.role.id === userRole.id) {
       const inviteCode = await this.userService.generateInviteCode(user.email);
 
       await this.userService.updateUserRole(user.id, UserRoles.INVESTOR);
@@ -90,9 +92,10 @@ export class WalletController {
     @Res({ passthrough: true }) response: Response,
     @Body() walletDto: CreateOrUpdateWalletDto,
   ) {
-    const user: JwtPayload = request.user as JwtPayload;
+    const user = request.user as JwtPayload;
+    const foundUser = await this.userService.findOne(user.id);
 
-    if (user.role.name === UserRoles.ADMIN) {
+    if (foundUser.role.name === UserRoles.ADMIN) {
       response.statusCode = 200;
       return this.walletService.giveMeThatMoney(walletDto.amount, user.id);
     }

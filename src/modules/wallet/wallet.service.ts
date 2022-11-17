@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
+import { FindOptionsWhere, MoreThan, Not, Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { OperationType } from '../../common/enums/operation-type.enum';
@@ -14,8 +14,6 @@ import { makeOperationWithWalletAmount } from '../../common/helpers/make-operati
 import { Wallet } from '../../entities';
 import { CreateOperationDto } from '../operation/dto/create-operation.dto';
 import { OperationService } from '../operation/operation.service';
-
-import { CreateOrUpdateWalletDto } from './dto/create-or-update-wallet.dto';
 
 @Injectable()
 export class WalletService {
@@ -27,8 +25,8 @@ export class WalletService {
     private readonly operationService: OperationService,
   ) {}
 
-  async create(walletDto: CreateOrUpdateWalletDto) {
-    return this.walletRepository.save(walletDto);
+  async create(wallet: Wallet) {
+    return this.walletRepository.save(wallet);
   }
 
   private async findOneBy(filters: FindOptionsWhere<Wallet>): Promise<Wallet> {
@@ -45,23 +43,28 @@ export class WalletService {
     return this.findOneBy({ id });
   }
 
-  async update(wallet: Wallet) {
-    return this.walletRepository.save(wallet);
+  async update(wallet: Wallet | Wallet[]) {
+    return Array.isArray(wallet)
+      ? this.walletRepository.save(wallet)
+      : this.walletRepository.save(wallet);
   }
 
-  async operation(walletId: number, amount: number, type: OperationType) {
+  async operation(
+    walletId: number,
+    operationAmount: number,
+    type: OperationType,
+  ) {
     const wallet = await this.walletRepository.findOne({
       select: { id: true, amount: true },
       where: { id: walletId },
       relations: { user: true },
     });
 
-    const updatedAmount = makeOperationWithWalletAmount(
+    const { updatedAmount, earnings } = makeOperationWithWalletAmount(
       wallet.amount,
-      amount,
+      operationAmount,
       type,
     );
-    const earnings = (wallet.amount - updatedAmount) * -1;
 
     await this.update(
       this.walletRepository.merge(wallet, { amount: updatedAmount }),
@@ -69,7 +72,7 @@ export class WalletService {
     await this.operationService.create([
       {
         operationType: type,
-        amount: earnings,
+        earnings,
         userId: wallet.user.id,
       },
     ]);
@@ -93,39 +96,28 @@ export class WalletService {
   })
   async dailyDepositeIncrease() {
     const walletsWithDeposits = await this.walletRepository.find({
-      where: [
-        {
-          user: {
-            role: {
-              name: UserRoles.INVESTOR,
-            },
+      where: {
+        user: {
+          role: {
+            name: Not(UserRoles.USER),
           },
-          amount: MoreThan(0),
         },
-        {
-          user: {
-            role: {
-              name: UserRoles.INVITER,
-            },
-          },
-          amount: MoreThan(0),
-        },
-      ],
+        amount: MoreThan(0),
+      },
       relations: {
         user: true,
       },
     });
     const operations: CreateOperationDto[] = [];
     const updatedWallets = walletsWithDeposits.map((wallet) => {
-      const updatedAmount = makeOperationWithWalletAmount(
+      const { updatedAmount, earnings } = makeOperationWithWalletAmount(
         wallet.amount,
         this.depositPercent,
         OperationType.DAILY_INCREASE,
       );
-      const earnings = (wallet.amount - updatedAmount) * -1;
 
       operations.push({
-        amount: earnings,
+        earnings,
         operationType: OperationType.DAILY_INCREASE,
         userId: wallet.user.id,
       });
@@ -135,59 +127,55 @@ export class WalletService {
       });
     });
 
-    await this.walletRepository.save(updatedWallets);
+    await this.update(updatedWallets);
     await this.operationService.create(operations);
   }
 
-  async giveMeThatMoney(amount: number, userId: number) {
-    let rest = amount;
-    let prevRest = rest;
-
+  async giveMeThatMoney(operationAmount: number, adminId: number) {
     const adminWallet = await this.walletRepository.findOne({
-      where: { user: { id: userId } },
+      where: { user: { id: adminId } },
     });
 
-    if (adminWallet.amount >= amount) {
-      this.walletRepository.save(
+    if (adminWallet.amount >= operationAmount) {
+      this.update(
         this.walletRepository.merge(adminWallet, {
-          amount: adminWallet.amount - amount,
+          amount: adminWallet.amount - operationAmount,
         }),
       );
 
-      return `Successfully withdrawn ${amount}`;
+      return `Successfully withdrawn ${operationAmount}`;
+    }
+
+    const totalAmount = await this.walletRepository
+      .createQueryBuilder('wallets')
+      .select('SUM(wallets.amount)', 'totalAmount')
+      .getRawOne();
+
+    if (operationAmount > totalAmount) {
+      throw new ConflictException(
+        ErrorMessages.NOT_ENOUGH_MONEY_TO_STEAL(operationAmount, totalAmount),
+      );
     }
 
     const wallets: (Wallet & { total: number })[] =
       await this.walletRepository.query(
         `select * from 
-          (
-            select w.*, sum(w.amount) over (order by w.amount asc) as total
-            from wallets as w
-            left join users as u 
-            on u.wallet_id = w.id
-            left join roles as r
-            on u.role_id = r.id
-            where w.amount > 0 and r.name != '${UserRoles.ADMIN}'
-          ) t 
-        where 
-          total - amount < ${amount}`,
+        (
+          select w.*, sum(w.amount) over (order by w.amount asc) as total
+          from wallets as w
+          left join users as u 
+          on u.wallet_id = w.id
+          left join roles as r
+          on u.role_id = r.id
+          where w.amount > 0
+          order by r.id desc
+        ) t 
+      where 
+        total - amount < ${operationAmount}`,
       );
-    const [{ total }] = await this.walletRepository.query(
-      `select sum(w.amount) as total
-      from wallets as w 
-      left join users as u 
-      on u.wallet_id = w.id
-      left join roles as r
-      on u.role_id = r.id
-      where r.name != '${UserRoles.ADMIN}'`,
-    );
 
-    if (total < amount) {
-      throw new ConflictException(
-        ErrorMessages.NOT_ENOUGH_MONEY_TO_STEAL(amount, total),
-      );
-    }
-
+    let rest = operationAmount;
+    let prevRest = rest;
     const updatedWallets = wallets.map((wallet) => {
       prevRest = rest;
       rest = Math.max(0, rest - wallet.amount);
@@ -196,8 +184,8 @@ export class WalletService {
       return wallet;
     });
 
-    await this.walletRepository.save(updatedWallets);
+    await this.update(updatedWallets);
 
-    return `Successfully stolen ${amount}`;
+    return `Successfully stolen ${operationAmount}`;
   }
 }

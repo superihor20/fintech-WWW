@@ -45,7 +45,7 @@ export class UserController {
   @ApiOkResponse({ type: UserDto })
   @ApiNotFoundResponse({ description: ErrorMessages.USER_NOT_FOUND })
   getMyAccount(@Req() req: Request) {
-    const user: JwtPayload = req.user as JwtPayload;
+    const user = req.user as JwtPayload;
 
     return this.userService.findOne(+user.id);
   }
@@ -57,7 +57,7 @@ export class UserController {
   @ApiOkResponse({ description: 'In response will be referall link' })
   @ApiForbiddenResponse({ description: 'Forbidden resource' })
   async getReferallLink(@Req() req: Request) {
-    const user: JwtPayload = req.user as JwtPayload;
+    const user = req.user as JwtPayload;
     const foundUser = await this.userService.findOne(+user.id);
 
     return `${process.env.HOST}/auth/sign-up?code=${foundUser.inviteCode}`;
@@ -89,7 +89,8 @@ export class UserController {
   @ApiOkResponse({ type: UserDto })
   @ApiNotFoundResponse({ description: ErrorMessages.USER_NOT_FOUND })
   update(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
-    const user: JwtPayload = req.user as JwtPayload;
+    const user = req.user as JwtPayload;
+
     return this.userService.update(+user.id, updateUserDto);
   }
 

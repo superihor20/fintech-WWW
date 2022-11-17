@@ -1,10 +1,7 @@
-import { Role } from '../../entities';
-
 export interface JwtPayload {
   id: number;
   email: string;
-  role: Role;
+  walletId: number;
   iat: number;
   exp: number;
-  walletId: number;
 }

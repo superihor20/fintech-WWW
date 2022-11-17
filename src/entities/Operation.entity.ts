@@ -24,7 +24,7 @@ export class Operation {
   operationType: OperationType;
 
   @Column({ type: 'float' })
-  amount: number;
+  earnings: number;
 
   @CreateDateColumn({
     name: 'created_at',

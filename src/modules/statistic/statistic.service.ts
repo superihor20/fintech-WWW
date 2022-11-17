@@ -56,7 +56,9 @@ export class StatisticService {
     const { totalAmount } = await this.userRepository
       .createQueryBuilder('user')
       .leftJoin('user.wallet', 'wallets')
+      .leftJoin('user.role', 'roles')
       .select('SUM(wallets.amount)', 'totalAmount')
+      .where(`roles.name != '${UserRoles.ADMIN}'`)
       .getRawOne();
 
     return {
