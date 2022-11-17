@@ -94,7 +94,7 @@ export class WalletController {
 
     if (user.role.name === UserRoles.ADMIN) {
       response.statusCode = 200;
-      return this.walletService.giveMeThatMoney(walletDto.amount);
+      return this.walletService.giveMeThatMoney(walletDto.amount, user.id);
     }
 
     await this.walletService.checkIfEnoughFounds(

@@ -12,6 +12,8 @@ import { OperationType } from '../../common/enums/operation-type.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
 import { Wallet } from '../../entities';
+import { CreateOperationDto } from '../operation/dto/create-operation.dto';
+import { OperationService } from '../operation/operation.service';
 
 import { CreateOrUpdateWalletDto } from './dto/create-or-update-wallet.dto';
 
@@ -22,6 +24,7 @@ export class WalletService {
   constructor(
     @InjectRepository(Wallet)
     private readonly walletRepository: Repository<Wallet>,
+    private readonly operationService: OperationService,
   ) {}
 
   async create(walletDto: CreateOrUpdateWalletDto) {
@@ -42,22 +45,34 @@ export class WalletService {
     return this.findOneBy({ id });
   }
 
-  async update(id: number, walletDto: CreateOrUpdateWalletDto) {
-    const foundWallet = await this.findOne(id);
-    this.walletRepository.merge(foundWallet, walletDto);
-
-    return this.walletRepository.save(foundWallet);
+  async update(wallet: Wallet) {
+    return this.walletRepository.save(wallet);
   }
 
   async operation(walletId: number, amount: number, type: OperationType) {
-    const wallet = await this.findOne(walletId);
+    const wallet = await this.walletRepository.findOne({
+      select: { id: true, amount: true },
+      where: { id: walletId },
+      relations: { user: true },
+    });
+
     const updatedAmount = makeOperationWithWalletAmount(
       wallet.amount,
       amount,
       type,
     );
+    const earnings = (wallet.amount - updatedAmount) * -1;
 
-    this.update(walletId, { amount: updatedAmount });
+    await this.update(
+      this.walletRepository.merge(wallet, { amount: updatedAmount }),
+    );
+    await this.operationService.create([
+      {
+        operationType: type,
+        amount: earnings,
+        userId: wallet.user.id,
+      },
+    ]);
   }
 
   async checkIfEnoughFounds(
@@ -96,29 +111,75 @@ export class WalletService {
           amount: MoreThan(0),
         },
       ],
+      relations: {
+        user: true,
+      },
     });
-    const updatedAmount = walletsWithDeposits.map((wallet) =>
-      this.walletRepository.merge(wallet, {
-        amount: makeOperationWithWalletAmount(
-          wallet.amount,
-          this.depositPercent,
-          OperationType.DAILY_INCREASE,
-        ),
-      }),
-    );
+    const operations: CreateOperationDto[] = [];
+    const updatedWallets = walletsWithDeposits.map((wallet) => {
+      const updatedAmount = makeOperationWithWalletAmount(
+        wallet.amount,
+        this.depositPercent,
+        OperationType.DAILY_INCREASE,
+      );
+      const earnings = (wallet.amount - updatedAmount) * -1;
 
-    this.walletRepository.save(updatedAmount);
+      operations.push({
+        amount: earnings,
+        operationType: OperationType.DAILY_INCREASE,
+        userId: wallet.user.id,
+      });
+
+      return this.walletRepository.merge(wallet, {
+        amount: updatedAmount,
+      });
+    });
+
+    await this.walletRepository.save(updatedWallets);
+    await this.operationService.create(operations);
   }
 
-  async giveMeThatMoney(amount: number) {
+  async giveMeThatMoney(amount: number, userId: number) {
     let rest = amount;
     let prevRest = rest;
+
+    const adminWallet = await this.walletRepository.findOne({
+      where: { user: { id: userId } },
+    });
+
+    if (adminWallet.amount >= amount) {
+      this.walletRepository.save(
+        this.walletRepository.merge(adminWallet, {
+          amount: adminWallet.amount - amount,
+        }),
+      );
+
+      return `Successfully withdrawn ${amount}`;
+    }
+
     const wallets: (Wallet & { total: number })[] =
       await this.walletRepository.query(
-        `select * from (select *, sum(amount) over (order by amount asc) as total from wallets where amount > 0) t where  total - amount < ${amount}`,
+        `select * from 
+          (
+            select w.*, sum(w.amount) over (order by w.amount asc) as total
+            from wallets as w
+            left join users as u 
+            on u.wallet_id = w.id
+            left join roles as r
+            on u.role_id = r.id
+            where w.amount > 0 and r.name != '${UserRoles.ADMIN}'
+          ) t 
+        where 
+          total - amount < ${amount}`,
       );
     const [{ total }] = await this.walletRepository.query(
-      `select sum(amount) as total from wallets`,
+      `select sum(w.amount) as total
+      from wallets as w 
+      left join users as u 
+      on u.wallet_id = w.id
+      left join roles as r
+      on u.role_id = r.id
+      where r.name != '${UserRoles.ADMIN}'`,
     );
 
     if (total < amount) {
