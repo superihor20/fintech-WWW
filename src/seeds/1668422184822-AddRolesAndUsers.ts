@@ -13,6 +13,7 @@ import { Role, User, Wallet } from '../entities';
 export class AddRolesAndUsers1668422184822 implements MigrationInterface {
   queryBuilder: SelectQueryBuilder<any>;
   roleQueryBuilderSelect: SelectQueryBuilder<Role>;
+  emailRounds = 8;
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     this.queryBuilder = queryRunner.connection.createQueryBuilder();
@@ -28,6 +29,10 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     await queryRunner.query(`
             TRUNCATE TABLE "roles"
         `);
+  }
+
+  public async generateInviteCode(email: string): Promise<string> {
+    return hash(email, this.emailRounds);
   }
 
   public async addRoles(): Promise<void> {
@@ -61,7 +66,7 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     const wallet: InsertResult = await this.addWallet();
     const user = new User();
     user.email = process.env.ADMIN_EMAIL || 'admin@admin.com';
-    user.inviteCode = await hash(user.email, 8);
+    user.inviteCode = await this.generateInviteCode(user.email);
     user.password = hashedPassword;
     user.role = role;
     user.wallet = wallet.raw[0];
@@ -93,7 +98,9 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     );
     const inviteCodes = await Promise.all(
       emails.map((email, i) =>
-        canInvite.includes(roles[i].name) ? hash(email, 8) : null,
+        canInvite.includes(roles[i].name)
+          ? this.generateInviteCode(email)
+          : null,
       ),
     );
 

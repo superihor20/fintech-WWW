@@ -1,16 +1,32 @@
 import { OperationType } from '../enums/operation-type.enum';
 
+const getEarnings = (prevAmount: number, amount: number): number => {
+  return (prevAmount - amount) * -1;
+};
+
 export const makeOperationWithWalletAmount = (
-  totalAmount: number,
   amount: number,
+  operationAmountOrPercent: number,
   type: OperationType,
-): number => {
+): { updatedAmount: number; earnings: number } => {
+  let updatedAmount: number;
+
   switch (type) {
     case OperationType.DEPOSITE:
-      return totalAmount + amount;
+      updatedAmount = amount + operationAmountOrPercent;
+      break;
     case OperationType.WITHDRAW:
-      return totalAmount - amount;
+      updatedAmount = amount - operationAmountOrPercent;
+      break;
     case OperationType.DAILY_INCREASE:
-      return totalAmount + totalAmount * (amount / 100);
+      updatedAmount = amount + amount * (operationAmountOrPercent / 100);
+      break;
   }
+
+  const earnings = getEarnings(amount, updatedAmount);
+
+  return {
+    updatedAmount,
+    earnings,
+  };
 };
