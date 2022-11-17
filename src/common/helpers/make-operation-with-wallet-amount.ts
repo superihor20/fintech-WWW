@@ -14,10 +14,13 @@ export const makeOperationWithWalletAmount = (
   switch (type) {
     case OperationType.DEPOSITE:
       updatedAmount = amount + operationAmountOrPercent;
+      break;
     case OperationType.WITHDRAW:
       updatedAmount = amount - operationAmountOrPercent;
+      break;
     case OperationType.DAILY_INCREASE:
       updatedAmount = amount + amount * (operationAmountOrPercent / 100);
+      break;
   }
 
   const earnings = getEarnings(amount, updatedAmount);

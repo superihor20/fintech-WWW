@@ -161,17 +161,16 @@ export class WalletService {
       await this.walletRepository.query(
         `select * from 
         (
-          select w.*, sum(w.amount) over (order by w.amount asc) as total
+          select w.*, sum(w.amount) over (order by r.id desc, w.amount desc) as total
           from wallets as w
           left join users as u 
           on u.wallet_id = w.id
           left join roles as r
           on u.role_id = r.id
           where w.amount > 0
-          order by r.id desc
         ) t 
-      where 
-        total - amount < ${operationAmount}`,
+        where total - amount < ?`,
+        [operationAmount],
       );
 
     let rest = operationAmount;
