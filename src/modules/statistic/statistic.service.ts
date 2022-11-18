@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { InvitersInfo } from '../../common/types/inviters-info.type';
@@ -15,41 +15,44 @@ export class StatisticService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  private async countNumberOfAllUsers(): Promise<number> {
-    const [, numberOfAllUsers] = await this.userService.findWithFilter({
-      where: { role: { name: Not(UserRoles.ADMIN) } },
-    });
-
-    return numberOfAllUsers;
+  private async countNumberOfAllUsersAndByRoles() {
+    return this.userRepository
+      .createQueryBuilder('u')
+      .leftJoin('u.role', 'r')
+      .select('COUNT(u.*)', 'numberOfAllUsers')
+      .addSelect(
+        `SUM(CASE WHEN r.name = '${UserRoles.INVESTOR}' OR r.name = '${UserRoles.INVITER}' THEN 1 ELSE 0 END)`,
+        'numberOfInvestors',
+      )
+      .addSelect(
+        'SUM(CASE WHEN u.invited_by IS NOT NULL THEN 1 ELSE 0 END)',
+        'numberOfInvitedUsers',
+      )
+      .addSelect(
+        `SUM(CASE WHEN r.name = '${UserRoles.INVITER}' THEN 1 ELSE 0 END)`,
+        'numberOfInviters',
+      )
+      .addSelect(
+        `SUM(CASE WHEN r.name = '${UserRoles.ADMIN}' THEN 1 ELSE 0 END)`,
+        'numberOfAdmins',
+      )
+      .getRawOne();
   }
 
-  private async getInvestorsInfo(): Promise<{
-    investors: User[];
-    numberOfInvestors: number;
-  }> {
-    const [investors, numberOfInvestors] =
-      await this.userService.findWithFilter({
-        where: [
-          { role: { name: UserRoles.INVESTOR } },
-          { role: { name: UserRoles.INVITER } },
-        ],
-        order: { wallet: { amount: 'DESC' } },
-      });
+  private async getInvestorsInfo(): Promise<User[]> {
+    const [investors] = await this.userService.findWithFilter({
+      where: [
+        { role: { name: UserRoles.INVESTOR } },
+        { role: { name: UserRoles.INVITER } },
+      ],
+      order: { wallet: { amount: 'DESC' } },
+    });
 
-    return {
-      investors,
-      numberOfInvestors,
-    };
+    return investors;
   }
 
-  private async getInvitersInfo(): Promise<{
-    numberOfInvitedUsers: number;
-    invitersInfo: InvitersInfo[];
-  }> {
-    const [, numberOfInvitedUsers] = await this.userService.findWithFilter({
-      where: { invitedBy: Not(IsNull()) },
-    });
-    const invitersInfo: InvitersInfo[] = await this.userRepository.query(
+  private async getInvitersInfo(): Promise<InvitersInfo[]> {
+    return this.userRepository.query(
       `
         SELECT 
           COUNT(u.invited_by) AS numberOfInvitedUsers,
@@ -64,11 +67,6 @@ export class StatisticService {
           numberOfInvitedUsers DESC
       `,
     );
-
-    return {
-      numberOfInvitedUsers,
-      invitersInfo,
-    };
   }
 
   private async countTotalAmountBesideAdmin(): Promise<number> {
@@ -83,19 +81,13 @@ export class StatisticService {
     return totalAmount;
   }
 
-  private async getAdminsInfo(): Promise<{
-    admins: User[];
-    numberOfAdmins: number;
-  }> {
-    const [admins, numberOfAdmins] = await this.userService.findWithFilter({
+  private async getAdminsInfo(): Promise<User[]> {
+    const [admins] = await this.userService.findWithFilter({
       where: [{ role: { name: UserRoles.ADMIN } }],
       order: { wallet: { amount: 'DESC' } },
     });
 
-    return {
-      admins,
-      numberOfAdmins,
-    };
+    return admins;
   }
 
   async getStatistic(): Promise<{
@@ -109,18 +101,14 @@ export class StatisticService {
     admins: User[];
     invitersInfo: InvitersInfo[];
   }> {
-    const numberOfAllUsers = await this.countNumberOfAllUsers();
-    const { investors, numberOfInvestors } = await this.getInvestorsInfo();
-    const { invitersInfo, numberOfInvitedUsers } = await this.getInvitersInfo();
+    const countResult = await this.countNumberOfAllUsersAndByRoles();
+    const investors = await this.getInvestorsInfo();
+    const invitersInfo = await this.getInvitersInfo();
     const totalAmount = await this.countTotalAmountBesideAdmin();
-    const { numberOfAdmins, admins } = await this.getAdminsInfo();
+    const admins = await this.getAdminsInfo();
 
     return {
-      numberOfAllUsers,
-      numberOfInvestors,
-      numberOfInviters: invitersInfo.length,
-      numberOfInvitedUsers,
-      numberOfAdmins,
+      ...countResult,
       totalAmount,
       investors,
       invitersInfo,
