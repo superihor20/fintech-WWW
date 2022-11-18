@@ -5,5 +5,5 @@ export const jwtConfig = async (
   configService: ConfigService,
 ): Promise<JwtModuleOptions> => ({
   secret: configService.get('JWT_SECRET'),
-  signOptions: { expiresIn: '15m' },
+  signOptions: { expiresIn: '2h' },
 });
