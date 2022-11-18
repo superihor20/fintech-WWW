@@ -75,6 +75,30 @@
         </table>
       </div>
 
+      <div class='container'>
+        <h2>Admins</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each admins}}
+              <tr>
+                <td>{{this.email}}</td>
+                <td>{{this.wallet.amount}}</td>
+              </tr>
+            {{/each}}
+            <tr>
+              <td></td>
+              <td>Total: {{numberOfAdmins}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </body>
 </html>

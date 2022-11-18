@@ -20,8 +20,10 @@ export class StatisticService {
     numberOfInvestors: number;
     numberOfInviters: number;
     numberOfInvitedUsers: number;
+    numberOfAdmins: number;
     totalAmount: number;
     investors: User[];
+    admins: User[];
     invitersInfo: InvitersInfo;
   }> {
     const [, numberOfAllUsers] = await this.userService.findWithFilter({
@@ -60,15 +62,21 @@ export class StatisticService {
       .select('SUM(wallets.amount)', 'totalAmount')
       .where(`roles.name != '${UserRoles.ADMIN}'`)
       .getRawOne();
+    const [admins, numberOfAdmins] = await this.userService.findWithFilter({
+      where: [{ role: { name: UserRoles.ADMIN } }],
+      order: { wallet: { amount: 'DESC' } },
+    });
 
     return {
       numberOfAllUsers,
       numberOfInvestors,
       numberOfInviters: invitersInfo.length,
       numberOfInvitedUsers,
+      numberOfAdmins,
       totalAmount,
       investors,
       invitersInfo,
+      admins,
     };
   }
 }
