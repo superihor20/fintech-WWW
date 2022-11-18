@@ -14,8 +14,6 @@ import { OperationService } from '../operation/operation.service';
 
 @Injectable()
 export class WalletService {
-  private readonly depositPercent = 1;
-
   constructor(
     @InjectRepository(Wallet)
     private readonly walletRepository: Repository<Wallet>,
