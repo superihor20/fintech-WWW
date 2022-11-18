@@ -9,7 +9,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { OperationTypes } from '../../common/enums/operation-types.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
-import { Wallet } from '../../entities';
+import { User, Wallet } from '../../entities';
 import { OperationService } from '../operation/operation.service';
 
 @Injectable()
@@ -44,11 +44,8 @@ export class WalletService {
       : this.walletRepository.save(wallet);
   }
 
-  async operation(
-    wallet: Wallet,
-    operationAmount: number,
-    type: OperationTypes,
-  ) {
+  async operation(user: User, operationAmount: number, type: OperationTypes) {
+    const { wallet } = user;
     const { updatedAmount, earnings } = makeOperationWithWalletAmount(
       wallet.amount,
       operationAmount,
@@ -62,7 +59,7 @@ export class WalletService {
       {
         operationType: type,
         earnings,
-        userId: wallet.user.id,
+        userId: user.id,
       },
     ]);
   }
@@ -118,7 +115,7 @@ export class WalletService {
           on u.role_id = r.id
           where w.amount > 0
         ) t 
-        where total - amount < ?`,
+        where total - amount < $1`,
         [operationAmount],
       );
 

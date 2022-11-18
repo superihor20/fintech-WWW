@@ -48,7 +48,7 @@ export class WalletTaskService {
       .select('w.id, w.amount')
       .addSelect('u.invited_by', 'invitedBy')
       .addSelect('u.id', 'userId')
-      .where(`r.name != '${UserRoles.USER}'`)
+      .where(`r.name != :userRole`, { userRole: UserRoles.USER })
       .orderBy('u.id', 'DESC')
       .getRawMany();
     const indexTable = this.createIndexTable(walletsWithDeposits);
@@ -63,6 +63,7 @@ export class WalletTaskService {
       updatedWallet.id = wallet.id;
       updatedWallet.amount = updatedAmount;
 
+      updatedWallets.push(updatedWallet);
       operations.push({
         earnings,
         operationType: OperationTypes.DAILY_INCREASE,

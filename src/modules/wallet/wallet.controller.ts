@@ -66,7 +66,7 @@ export class WalletController {
     const userRole = await this.userService.getUserRole(UserRoles.USER);
 
     await this.walletService.operation(
-      foundUser.wallet,
+      foundUser,
       walletDto.amount,
       OperationTypes.DEPOSITE,
     );
@@ -105,7 +105,7 @@ export class WalletController {
       walletDto.amount,
     );
     await this.walletService.operation(
-      foundUser.wallet,
+      foundUser,
       walletDto.amount,
       OperationTypes.WITHDRAW,
     );
