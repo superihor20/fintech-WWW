@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { OperationType } from '../common/enums/operation-type.enum';
+import { OperationTypes } from '../common/enums/operation-types.enum';
 
 import { User } from './User.entity';
 
@@ -19,9 +19,9 @@ export class Operation {
   @Column({
     name: 'operation_type',
     type: 'enum',
-    enum: OperationType,
+    enum: OperationTypes,
   })
-  operationType: OperationType;
+  operationType: OperationTypes;
 
   @Column({ type: 'float' })
   earnings: number;

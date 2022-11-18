@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
-import { OperationType } from '../../common/enums/operation-type.enum';
+import { OperationTypes } from '../../common/enums/operation-types.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
 import { Wallet } from '../../entities';
 import { OperationService } from '../operation/operation.service';
@@ -47,7 +47,7 @@ export class WalletService {
   async operation(
     wallet: Wallet,
     operationAmount: number,
-    type: OperationType,
+    type: OperationTypes,
   ) {
     const { updatedAmount, earnings } = makeOperationWithWalletAmount(
       wallet.amount,

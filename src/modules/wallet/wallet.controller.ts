@@ -21,7 +21,7 @@ import {
 import { Request, Response } from 'express';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
-import { OperationType } from '../../common/enums/operation-type.enum';
+import { OperationTypes } from '../../common/enums/operation-types.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { Roles } from '../../decorators/role.decorator';
@@ -68,7 +68,7 @@ export class WalletController {
     await this.walletService.operation(
       foundUser.wallet,
       walletDto.amount,
-      OperationType.DEPOSITE,
+      OperationTypes.DEPOSITE,
     );
 
     if (foundUser.role.id === userRole.id) {
@@ -107,7 +107,7 @@ export class WalletController {
     await this.walletService.operation(
       foundUser.wallet,
       walletDto.amount,
-      OperationType.WITHDRAW,
+      OperationTypes.WITHDRAW,
     );
     response.statusCode = 204;
   }

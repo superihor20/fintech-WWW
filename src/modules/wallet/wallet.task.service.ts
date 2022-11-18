@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { OperationType } from '../../common/enums/operation-type.enum';
+import { OperationTypes } from '../../common/enums/operation-types.enum';
 import { UserRoles } from '../../common/enums/user-roles.enum';
 import { makeOperationWithWalletAmount } from '../../common/helpers/make-operation-with-wallet-amount';
 import { WalletWithUser } from '../../common/types/wallet-with-user.type';
@@ -57,7 +57,7 @@ export class WalletTaskService {
       const { updatedAmount, earnings } = makeOperationWithWalletAmount(
         wallet.amount,
         this.depositPercent,
-        OperationType.DAILY_INCREASE,
+        OperationTypes.DAILY_INCREASE,
       );
       const updatedWallet = new Wallet();
       updatedWallet.id = wallet.id;
@@ -65,7 +65,7 @@ export class WalletTaskService {
 
       operations.push({
         earnings,
-        operationType: OperationType.DAILY_INCREASE,
+        operationType: OperationTypes.DAILY_INCREASE,
         userId: wallet.userId,
       });
 
@@ -76,7 +76,7 @@ export class WalletTaskService {
         walletOfInviter.amount += bonus;
         operations.push({
           earnings: bonus,
-          operationType: OperationType.INVITER_BONUS,
+          operationType: OperationTypes.INVITER_BONUS,
           userId: walletOfInviter.userId,
         });
       }

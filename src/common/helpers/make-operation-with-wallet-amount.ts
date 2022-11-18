@@ -1,4 +1,4 @@
-import { OperationType } from '../enums/operation-type.enum';
+import { OperationTypes } from '../enums/operation-types.enum';
 
 const getEarnings = (prevAmount: number, amount: number): number => {
   return (prevAmount - amount) * -1;
@@ -7,18 +7,18 @@ const getEarnings = (prevAmount: number, amount: number): number => {
 export const makeOperationWithWalletAmount = (
   amount: number,
   operationAmountOrPercent: number,
-  type: OperationType,
+  type: OperationTypes,
 ): { updatedAmount: number; earnings: number } => {
   let updatedAmount: number;
 
   switch (type) {
-    case OperationType.DEPOSITE:
+    case OperationTypes.DEPOSITE:
       updatedAmount = amount + operationAmountOrPercent;
       break;
-    case OperationType.WITHDRAW:
+    case OperationTypes.WITHDRAW:
       updatedAmount = amount - operationAmountOrPercent;
       break;
-    case OperationType.DAILY_INCREASE:
+    case OperationTypes.DAILY_INCREASE:
       updatedAmount = amount + amount * (operationAmountOrPercent / 100);
       break;
   }
