@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { InvitersInfo } from '../../common/interfaces/inviters-info.interface';
+import { InvitersInfo } from '../../common/types/inviters-info.type';
 import { User } from '../../entities';
 import { UserService } from '../user/user.service';
 

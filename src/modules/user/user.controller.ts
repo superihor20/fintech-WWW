@@ -23,7 +23,7 @@ import { Request } from 'express';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
+import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { Roles } from '../../decorators/role.decorator';
 import { RolesGuard } from '../../guards/roles.guards';
 import { UpdateUserDto } from '../auth/dto/update-user.dto';
