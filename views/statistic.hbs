@@ -20,6 +20,7 @@
       <div class='container'>
         <h2>Users</h2>
         <ul>
+          <li>Number of admin: {{numberOfAdmins}};</li>
           <li>Number of users: {{numberOfAllUsers}};</li>
           <li>Number of inviters: {{numberOfInviters}};</li>
           <li>Number of invited users: {{numberOfInvitedUsers}};</li>
@@ -70,6 +71,30 @@
             <tr>
               <td></td>
               <td>Total: {{numberOfInvitedUsers}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class='container'>
+        <h2>Admins</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each admins}}
+              <tr>
+                <td>{{this.email}}</td>
+                <td>{{this.wallet.amount}}</td>
+              </tr>
+            {{/each}}
+            <tr>
+              <td></td>
+              <td>Total: {{numberOfAdmins}}</td>
             </tr>
           </tbody>
         </table>

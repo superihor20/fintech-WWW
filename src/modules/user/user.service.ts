@@ -4,8 +4,9 @@ import { hash } from 'bcrypt';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { Role, User } from '../../entities';
+import { Role, User, Wallet } from '../../entities';
 import { UpdateUserDto } from '../auth/dto/update-user.dto';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class UserService {
@@ -16,10 +17,15 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    private readonly walletService: WalletService,
   ) {}
 
   async create(user: User): Promise<User> {
-    return this.userRepository.save(user);
+    const newUser = await this.userRepository.save(user);
+    const wallet = new Wallet();
+    newUser.wallet = await this.walletService.create(wallet);
+
+    return this.userRepository.save(newUser);
   }
 
   private async findOneBy(filters: FindOptionsWhere<User>): Promise<User> {

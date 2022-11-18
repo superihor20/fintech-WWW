@@ -1,10 +1,10 @@
 import { IsEnum, IsNumber, IsPositive } from 'class-validator';
 
-import { OperationType } from '../../../common/enums/operation-type.enum';
+import { OperationTypes } from '../../../common/enums/operation-types.enum';
 
 export class CreateOperationDto {
-  @IsEnum(OperationType)
-  operationType: OperationType;
+  @IsEnum(OperationTypes)
+  operationType: OperationTypes;
 
   @IsNumber()
   @IsPositive()

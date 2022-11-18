@@ -6,6 +6,7 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 
+import { rolesWeight } from '../common/constants/roles-weight.constant';
 import { UserRoles } from '../common/enums/user-roles.enum';
 import { getRandomNumberInRage } from '../common/helpers/get-random-number-in-range';
 import { Role, User, Wallet } from '../entities';
@@ -39,7 +40,12 @@ export class AddRolesAndUsers1668422184822 implements MigrationInterface {
     await this.queryBuilder
       .insert()
       .into(Role)
-      .values(Object.values(UserRoles).map((role) => ({ name: role })))
+      .values(
+        Object.values(UserRoles).map((role) => ({
+          name: role,
+          weight: rolesWeight[role],
+        })),
+      )
       .execute();
   }
 

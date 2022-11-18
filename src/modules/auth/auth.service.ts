@@ -8,10 +8,9 @@ import { hash, compare } from 'bcrypt';
 
 import { ErrorMessages } from '../../common/constants/errors-messages.constant';
 import { UserRoles } from '../../common/enums/user-roles.enum';
-import { User, Wallet } from '../../entities';
+import { User } from '../../entities';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { UserService } from '../user/user.service';
-import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +19,6 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private readonly walletService: WalletService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -54,11 +52,9 @@ export class AuthService {
 
   async signUp(userDto: CreateUserDto, code?: string) {
     const user = new User();
-    const wallet = new Wallet();
     user.email = userDto.email;
     user.password = await this.hashPassword(userDto.password);
     user.role = await this.userService.getUserRole(UserRoles.USER);
-    user.wallet = await this.walletService.create(wallet);
 
     if (code) {
       const inviter = await this.userService.findOneByInviteCode(code);
