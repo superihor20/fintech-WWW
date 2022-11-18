@@ -110,7 +110,7 @@ export class WalletService {
       await this.walletRepository.query(
         `select * from 
         (
-          select w.*, sum(w.amount) over (order by r.id desc, w.amount desc) as total
+          select w.*, sum(w.amount) over (order by r.weight desc, w.amount desc) as total
           from wallets as w
           left join users as u 
           on u.wallet_id = w.id
